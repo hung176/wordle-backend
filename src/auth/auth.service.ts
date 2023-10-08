@@ -1,7 +1,7 @@
 import {
-  ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
@@ -28,7 +28,7 @@ export class AuthService {
     );
 
     if (!isCorrectPassword) {
-      throw new ForbiddenException('password is incorrect');
+      throw new UnauthorizedException();
     }
 
     return findUser.toObject({

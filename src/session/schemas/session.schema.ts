@@ -6,7 +6,7 @@ export type SessionDocument = Session & Document;
 
 @Schema({ timestamps: true, versionKey: false })
 export class Session {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: User.name })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: User.name })
   userId: MongooseSchema.Types.ObjectId;
 
   @Prop()
@@ -19,7 +19,7 @@ export class Session {
   attempts: string[];
 
   @Prop()
-  result: string;
+  status: string;
 
   @Prop({ default: Date.now })
   createdAt: Date;

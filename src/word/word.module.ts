@@ -10,5 +10,6 @@ import { Word, WordSchema } from './schemas/word.schema';
   ],
   controllers: [WordController],
   providers: [WordService],
+  exports: [WordService],
 })
 export class WordModule {}

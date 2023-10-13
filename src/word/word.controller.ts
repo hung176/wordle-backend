@@ -12,7 +12,7 @@ export class WordController {
   }
 
   @Get('random')
-  async getRandom(): Promise<Word> {
+  async getRandom(): Promise<string> {
     return await this.wordService.random();
   }
 }

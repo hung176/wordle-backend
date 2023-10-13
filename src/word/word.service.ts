@@ -9,10 +9,10 @@ export class WordService {
     @InjectModel(Word.name) private readonly wordModel: Model<WordDocument>,
   ) {}
 
-  async random(): Promise<Word> {
+  async random(): Promise<string> {
     const count = await this.wordModel.count();
     const random = Math.floor(Math.random() * count);
-    return await this.wordModel.findOne().skip(random);
+    return (await this.wordModel.findOne().skip(random)).word;
   }
 
   async findAll() {

@@ -1,10 +1,23 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
+  constructor(private appService: AppService) {}
   @Post('start')
   async startGame() {
-    return 'startGame';
+    // get userId by JWT - from auth service
+    const userId = '65192d0e16e9f892f21ea1cf';
+
+    // check JWT is valid or expired -> use auth service
+
+    // check if user has active game session
+
+    // if yes, return existing game session
+
+    // if no, create new game session
+    return await this.appService.startGame();
+
     /*
       This endpoint is used to start a new game session.
       When a user wants to begin a new game, they make a request to this endpoint.

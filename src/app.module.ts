@@ -4,9 +4,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
+import { SessionModule } from './session/session.module';
+import { AppService } from './app.service';
 import { WordModule } from './word/word.module';
 import { UserModule } from './user/user.module';
-import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
@@ -27,10 +28,11 @@ import { SessionModule } from './session/session.module';
       inject: [ConfigService],
     }),
     AuthModule,
+    UserModule,
     WordModule,
     SessionModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [AppService],
 })
 export class AppModule {}

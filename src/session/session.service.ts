@@ -37,7 +37,7 @@ export class SessionService {
       .lean();
 
     if (!session) {
-      throw new NotFoundException('Session not found');
+      return null;
     }
 
     return {

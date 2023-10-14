@@ -67,25 +67,22 @@ export class AppService {
       attempts = [],
       attemptsRemaining = MAX_ATTEMPT,
     } = await this.sessionService.findActiveSessionByUser(userId);
-    const newAttempts = this.getPositionLetters(wordToGuess, guess, attempts);
-
-    // compare the word to guess with the submitted word
-    // if the word is correct, update status to COMPLETED, update attemps, attemptsRemaining and return result
-    if (wordToGuess === guess) {
-      return await this.sessionService.update(sessionId, {
-        status: STATUS.SUCCESS,
-        attempts: newAttempts,
-        attemptsRemaining: attemptsRemaining - 1,
-      });
-    }
-
-    // if the word is incorrect, update attempts, attemptsRemaining
+    const newAttempts = this.calPosition(wordToGuess, guess, attempts);
     const newAttemptsRemaining = attemptsRemaining - 1;
     await this.sessionService.update(sessionId, {
       attempts: newAttempts,
       attemptsRemaining: newAttemptsRemaining,
     });
 
+    // compare the word to guess with the submitted word
+    // if the word is correct, update status to COMPLETED, update attemps, attemptsRemaining and return result
+    if (wordToGuess === guess) {
+      return await this.sessionService.update(sessionId, {
+        status: STATUS.SUCCESS,
+      });
+    }
+
+    // if the word is incorrect, update attempts, attemptsRemaining
     // if attemptsRemaining is 0, update status to FAILED
     if (newAttemptsRemaining === 0) {
       return await this.sessionService.update(sessionId, {
@@ -104,6 +101,8 @@ export class AppService {
     return await this.sessionService.update(sessionId, {
       status: STATUS.EXPIRED,
     });
+
+    // Note: handle the case that the word includes duplicate letters
   }
 
   async getGameResult() {
@@ -114,29 +113,18 @@ export class AppService {
     return 'endGame';
   }
 
-  private getPositionLetters(
-    word: string,
-    guess: string,
-    attempts: WordPosition[],
-  ) {
-    const result: WordPosition = {
-      green: [],
-      yellow: [],
-    };
+  private calPosition(word: string, guess: string, attempts: WordPosition[]) {
+    const green: string[] = [];
+    const yellow: string[] = [];
     for (let i = 0; i < word.length; i++) {
       const charWord = word[i];
       const charGuess = guess[i];
       if (charWord === charGuess) {
-        result.green.push(charGuess);
+        green.push(charGuess);
       } else if (word.includes(charGuess)) {
-        const inGreen = attempts.some((at) => at.green.includes(charGuess));
-        if (inGreen) {
-          result.green.push(charGuess);
-          continue;
-        }
-        result.yellow.push(charGuess);
+        yellow.push(charGuess);
       }
     }
-    return [...attempts, result];
+    return [...attempts, { green, yellow }];
   }
 }

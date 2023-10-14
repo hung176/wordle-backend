@@ -1,21 +1,12 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
+import { WordGuessDto } from './app.dto';
 
 @Controller()
 export class AppController {
   constructor(private appService: AppService) {}
   @Post('start')
   async startGame() {
-    // get userId by JWT - from auth service
-    const userId = '65192d0e16e9f892f21ea1cf';
-
-    // check JWT is valid or expired -> use auth service
-
-    // check if user has active game session
-
-    // if yes, return existing game session
-
-    // if no, create new game session
     return await this.appService.startGame();
 
     /*
@@ -27,9 +18,8 @@ export class AppController {
   }
 
   @Post('guess')
-  async submitGuess(@Body() guess: string) {
-    console.log(guess);
-    return 'submitGuess';
+  async submitGuess(@Body() { guess }: WordGuessDto) {
+    return await this.appService.submitGuess(guess);
     /*
       This endpoint is used for submitting word guesses during an active game.
       When a user makes a guess in the game (e.g., entering a 5-letter word), the frontend sends a request to this endpoint with the guessed word.
@@ -46,6 +36,17 @@ export class AppController {
       When the user has either successfully guessed the word or exhausted their allowed attempts, the game is considered over.
       The frontend can request the result of the game by sending a request to this endpoint.
       The backend responds with the final outcome of the game, which might include whether the user won, lost, or achieved a certain score, and possibly the correct word.
+     */
+  }
+
+  @Post('end')
+  async endGame() {
+    return 'endGame';
+    /**
+      This endpoint is used to end a game session.
+      When the user wants to end the game, they can make a request to this endpoint.
+      The backend then updates the game state to indicate that the game is over.
+      The response typically includes information about the final state of the game, such as the correct word.
      */
   }
 }

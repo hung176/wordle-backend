@@ -1,13 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
+import { STATUS } from '../types';
 
 export type SessionDocument = Session & Document;
 
 @Schema({ timestamps: true, versionKey: false })
 export class Session {
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: User.name })
-  userId: MongooseSchema.Types.ObjectId;
+  @Prop({ type: String, required: true, ref: User.name })
+  userId: string;
 
   @Prop()
   wordToGuess: string;
@@ -19,10 +20,7 @@ export class Session {
   attempts: string[];
 
   @Prop()
-  status: string;
-
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  status: STATUS;
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);

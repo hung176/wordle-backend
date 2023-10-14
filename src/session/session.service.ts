@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Session, SessionDocument } from './schemas/session.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,30 +11,54 @@ export class SessionService {
   ) {}
 
   async create(session: SessionType) {
-    return await this.sessionModel.create(session);
+    const newSession = await this.sessionModel.create(session);
+    return {
+      sessionId: newSession._id,
+      attempts: newSession.attempts,
+      attemptsRemaining: newSession.attemptsRemaining,
+      status: newSession.status,
+    };
   }
 
   async getById(sessionId: string) {
-    return await this.sessionModel.findOne({ _id: sessionId });
+    return await this.sessionModel.findOne({ _id: sessionId }).lean();
   }
 
   async getByUserId(userId: string) {
-    return await this.sessionModel.find({ userId });
+    return await this.sessionModel.find({ userId }).lean();
   }
 
   async findActiveSessionByUser(userId: string) {
-    return await this.sessionModel.findOne(
-      {
+    const session = await this.sessionModel
+      .findOne({
         userId,
         status: STATUS.PLAYING,
-      },
-      { wordToGuess: 0, __v: 0, _id: 0 },
-    );
+      })
+      .lean();
+
+    if (!session) {
+      throw new NotFoundException('Session not found');
+    }
+
+    return {
+      sessionId: session._id,
+      attempts: session.attempts,
+      attemptsRemaining: session.attemptsRemaining,
+      status: session.status,
+      wordToGuess: session.wordToGuess,
+    };
   }
 
   async update(id: string, updateData: Partial<SessionType>) {
-    const session = await this.getById(id);
-    const updatedSession = { ...session, ...updateData };
-    return await this.sessionModel.updateOne({ _id: id }, updatedSession);
+    const session = await this.sessionModel
+      .findOneAndUpdate({ _id: id }, updateData, { new: true })
+      .lean();
+
+    return {
+      sessionId: session._id,
+      attempts: session.attempts,
+      attemptsRemaining: session.attemptsRemaining,
+      status: session.status,
+    };
   }
 }

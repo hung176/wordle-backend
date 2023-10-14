@@ -1,10 +1,12 @@
 export enum STATUS {
   PLAYING = 'PLAYING',
-  COMPLETED = 'COMPLETED',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
   EXPIRED = 'EXPIRED',
 }
 
 export type SessionType = {
+  sessionId?: string;
   userId: string;
   wordToGuess: string;
   attemptsRemaining: number;

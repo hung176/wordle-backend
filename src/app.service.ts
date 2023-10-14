@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { WordService } from './word/word.service';
 import { UserService } from './user/user.service';
 import { SessionService } from './session/session.service';
-import { STATUS, SessionType } from './session/types';
+import { STATUS, SessionType, WordPosition } from './session/types';
 
 const MAX_ATTEMPT = 6;
 
@@ -61,26 +61,28 @@ export class AppService {
     // check JWT is valid or expired -> use auth service
 
     // get the word to guess from session service
-    const { sessionId, wordToGuess, attempts, attemptsRemaining } =
-      await this.sessionService.findActiveSessionByUser(userId);
-
-    console.log(sessionId, wordToGuess, attempts, attemptsRemaining);
+    const {
+      sessionId,
+      wordToGuess,
+      attempts = [],
+      attemptsRemaining = MAX_ATTEMPT,
+    } = await this.sessionService.findActiveSessionByUser(userId);
+    const newAttempts = this.getPositionLetters(wordToGuess, guess, attempts);
 
     // compare the word to guess with the submitted word
     // if the word is correct, update status to COMPLETED, update attemps, attemptsRemaining and return result
     if (wordToGuess === guess) {
       return await this.sessionService.update(sessionId, {
         status: STATUS.SUCCESS,
-        attempts: [...attempts, guess],
+        attempts: newAttempts,
         attemptsRemaining: attemptsRemaining - 1,
       });
     }
 
     // if the word is incorrect, update attempts, attemptsRemaining
-    attempts.push(guess);
     const newAttemptsRemaining = attemptsRemaining - 1;
     await this.sessionService.update(sessionId, {
-      attempts,
+      attempts: newAttempts,
       attemptsRemaining: newAttemptsRemaining,
     });
 
@@ -110,5 +112,31 @@ export class AppService {
 
   async endGame() {
     return 'endGame';
+  }
+
+  private getPositionLetters(
+    word: string,
+    guess: string,
+    attempts: WordPosition[],
+  ) {
+    const result: WordPosition = {
+      green: [],
+      yellow: [],
+    };
+    for (let i = 0; i < word.length; i++) {
+      const charWord = word[i];
+      const charGuess = guess[i];
+      if (charWord === charGuess) {
+        result.green.push(charGuess);
+      } else if (word.includes(charGuess)) {
+        const inGreen = attempts.some((at) => at.green.includes(charGuess));
+        if (inGreen) {
+          result.green.push(charGuess);
+          continue;
+        }
+        result.yellow.push(charGuess);
+      }
+    }
+    return [...attempts, result];
   }
 }

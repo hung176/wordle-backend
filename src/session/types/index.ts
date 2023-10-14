@@ -5,11 +5,16 @@ export enum STATUS {
   EXPIRED = 'EXPIRED',
 }
 
+export type WordPosition = {
+  green: string[];
+  yellow: string[];
+};
+
 export type SessionType = {
   sessionId?: string;
   userId: string;
   wordToGuess: string;
   attemptsRemaining: number;
-  attempts: string[];
+  attempts: WordPosition[];
   status: STATUS;
 };

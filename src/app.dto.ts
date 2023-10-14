@@ -1,8 +1,8 @@
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, Length } from 'class-validator';
 
 export class WordGuessDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(5)
+  @Length(5)
   guess: string;
 }

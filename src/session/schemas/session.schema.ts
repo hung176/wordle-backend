@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
-import { STATUS } from '../types';
+import { STATUS, WordPosition } from '../types';
 
 export type SessionDocument = Session & Document;
 
@@ -17,7 +17,7 @@ export class Session {
   attemptsRemaining: number;
 
   @Prop()
-  attempts: string[];
+  attempts: WordPosition[];
 
   @Prop()
   status: STATUS;

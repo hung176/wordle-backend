@@ -1,8 +1,10 @@
 export enum STATUS {
   PLAYING = 'PLAYING',
   SUCCESS = 'SUCCESS',
+  // FAILED means the user has no attempt remaining
   FAILED = 'FAILED',
-  EXPIRED = 'EXPIRED',
+  // ENDED means the session is expired or user end the game
+  ENDED = 'ENDED',
 }
 
 export type WordPosition = {

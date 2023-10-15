@@ -55,54 +55,58 @@ export class AppService {
   }
 
   async submitGuess(guess: string) {
-    // get userId by JWT - from auth service
-    const userId = '65192d0e16e9f892f21ea1cf-1';
+    try {
+      // get userId by JWT - from auth service
+      const userId = '65192d0e16e9f892f21ea1cf-1';
 
-    // check JWT is valid or expired -> use auth service
+      // check JWT is valid or expired -> use auth service
 
-    // get the word to guess from session service
-    const {
-      sessionId,
-      wordToGuess,
-      attempts = [],
-      attemptsRemaining = MAX_ATTEMPT,
-    } = await this.sessionService.findActiveSessionByUser(userId);
-    const newAttempts = this.calPosition(wordToGuess, guess, attempts);
-    const newAttemptsRemaining = attemptsRemaining - 1;
-    await this.sessionService.update(sessionId, {
-      attempts: newAttempts,
-      attemptsRemaining: newAttemptsRemaining,
-    });
-
-    // compare the word to guess with the submitted word
-    // if the word is correct, update status to COMPLETED, update attemps, attemptsRemaining and return result
-    if (wordToGuess === guess) {
-      return await this.sessionService.update(sessionId, {
-        status: STATUS.SUCCESS,
+      // get the word to guess from session service
+      const {
+        sessionId,
+        wordToGuess,
+        attempts = [],
+        attemptsRemaining = MAX_ATTEMPT,
+      } = await this.sessionService.findActiveSessionByUser(userId);
+      const newAttempts = this.calPosition(wordToGuess, guess, attempts);
+      const newAttemptsRemaining = attemptsRemaining - 1;
+      await this.sessionService.update(sessionId, {
+        attempts: newAttempts,
+        attemptsRemaining: newAttemptsRemaining,
       });
-    }
 
-    // if the word is incorrect, update attempts, attemptsRemaining
-    // if attemptsRemaining is 0, update status to FAILED
-    if (newAttemptsRemaining === 0) {
+      // compare the word to guess with the submitted word
+      // if the word is correct, update status to COMPLETED, update attemps, attemptsRemaining and return result
+      if (wordToGuess === guess) {
+        return await this.sessionService.update(sessionId, {
+          status: STATUS.SUCCESS,
+        });
+      }
+
+      // if the word is incorrect, update attempts, attemptsRemaining
+      // if attemptsRemaining is 0, update status to FAILED
+      if (newAttemptsRemaining === 0) {
+        return await this.sessionService.update(sessionId, {
+          status: STATUS.FAILED,
+        });
+      }
+
+      // if attemptsRemaining is not 0, status is PLAYING
+      if (newAttemptsRemaining > 0) {
+        return await this.sessionService.update(sessionId, {
+          status: STATUS.PLAYING,
+        });
+      }
+
+      // if attemptsRemaining is not 0, but session is expired, update status to EXPIRED
       return await this.sessionService.update(sessionId, {
-        status: STATUS.FAILED,
+        status: STATUS.ENDED,
       });
+
+      // Note: handle the case that the word includes duplicate letters
+    } catch (e) {
+      throw new BadRequestException(`Can not submit guess - ${e.message}`);
     }
-
-    // if attemptsRemaining is not 0, status is PLAYING
-    if (newAttemptsRemaining > 0) {
-      return await this.sessionService.update(sessionId, {
-        status: STATUS.PLAYING,
-      });
-    }
-
-    // if attemptsRemaining is not 0, but session is expired, update status to EXPIRED
-    return await this.sessionService.update(sessionId, {
-      status: STATUS.EXPIRED,
-    });
-
-    // Note: handle the case that the word includes duplicate letters
   }
 
   async getGameResult() {
@@ -110,7 +114,23 @@ export class AppService {
   }
 
   async endGame() {
-    return 'endGame';
+    try {
+      // get userId by JWT - from auth service
+      // check JWT is valid or expired -> use auth service
+      const userId = '65192d0e16e9f892f21ea1cf-1';
+
+      // get the sessionId with userId and status is PLAYING
+      const { sessionId } = await this.sessionService.findActiveSessionByUser(
+        userId,
+      );
+
+      // update status to ENDED
+      return await this.sessionService.update(sessionId, {
+        status: STATUS.ENDED,
+      });
+    } catch (error) {
+      throw new BadRequestException('Can not end game');
+    }
   }
 
   private calPosition(word: string, guess: string, attempts: WordPosition[]) {

@@ -30,7 +30,7 @@ export class AppController {
 
   @Get('result')
   async getGameResult() {
-    return 'getGameResult';
+    // return await this.appService.getGameResult();
     /**
       This endpoint is used to retrieve the final result of a completed game.
       When the user has either successfully guessed the word or exhausted their allowed attempts, the game is considered over.
@@ -41,7 +41,7 @@ export class AppController {
 
   @Post('end')
   async endGame() {
-    return 'endGame';
+    return await this.appService.endGame();
     /**
       This endpoint is used to end a game session.
       When the user wants to end the game, they can make a request to this endpoint.

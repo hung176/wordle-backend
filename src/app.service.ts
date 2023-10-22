@@ -102,15 +102,9 @@ export class AppService {
       return await this.sessionService.update(sessionId, {
         status: STATUS.ENDED,
       });
-
-      // Note: handle the case that the word includes duplicate letters
     } catch (e) {
       throw new BadRequestException(`Can not submit guess - ${e.message}`);
     }
-  }
-
-  async getGameResult() {
-    return 'startGame';
   }
 
   async endGame() {
@@ -136,6 +130,7 @@ export class AppService {
   private calPosition(word: string, guess: string, attempts: WordPosition[]) {
     const green: string[] = [];
     const yellow: string[] = [];
+    const black: string[] = [];
     for (let i = 0; i < word.length; i++) {
       const charWord = word[i];
       const charGuess = guess[i];
@@ -143,8 +138,10 @@ export class AppService {
         green.push(charGuess);
       } else if (word.includes(charGuess)) {
         yellow.push(charGuess);
+      } else {
+        black.push(charGuess);
       }
     }
-    return [...attempts, { green, yellow }];
+    return [...attempts, { green, yellow, black }];
   }
 }

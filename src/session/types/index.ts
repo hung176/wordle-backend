@@ -1,3 +1,5 @@
+import { RandonWord } from 'src/word/word.service';
+
 export enum STATUS {
   PLAYING = 'PLAYING',
   SUCCESS = 'SUCCESS',
@@ -15,7 +17,7 @@ export type WordPosition = {
 export type SessionType = {
   sessionId?: string;
   userId: string;
-  wordToGuess: string;
+  wordToGuess: RandonWord;
   attemptsRemaining: number;
   attempts: WordPosition[];
   status: STATUS;

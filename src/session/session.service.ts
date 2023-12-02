@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Session, SessionDocument } from './schemas/session.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -37,7 +37,7 @@ export class SessionService {
       .lean();
 
     if (!session) {
-      return null;
+      throw new BadRequestException('Session not found');
     }
 
     return {

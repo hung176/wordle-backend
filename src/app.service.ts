@@ -129,16 +129,26 @@ export class AppService {
     }
   }
 
-  async getHints(text: string, length: number) {
-    const response = await this.aiService.textCompletion(text, length);
-    let hints: string;
-    await response.forEach((value) => {
-      const {
-        data: { outputs },
-      } = value;
-      hints = outputs[0].text;
-    });
-    return JSON.parse(hints);
+  async getHints(size: number): Promise<string[]> {
+    const userId = '65192d0e16e9f892f21ea1cf';
+    const { wordToGuess } = await this.sessionService.findActiveSessionByUser(
+      userId,
+    );
+    if (!wordToGuess) throw new BadRequestException('Word not found');
+
+    try {
+      const response = await this.aiService.textCompletion(wordToGuess, size);
+      let hints: string;
+      await response.forEach((value) => {
+        const {
+          data: { outputs },
+        } = value;
+        hints = outputs[0].text;
+      });
+      return JSON.parse(hints);
+    } catch (error) {
+      throw new BadRequestException('Can not get hints ', error.message);
+    }
   }
 
   private calPosition(word: string, guess: string, attempts: WordPosition[]) {

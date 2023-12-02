@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { WordGuessDto } from './app.dto';
 
@@ -47,6 +54,17 @@ export class AppController {
       When the user wants to end the game, they can make a request to this endpoint.
       The backend then updates the game state to indicate that the game is over.
       The response typically includes information about the final state of the game, such as the correct word.
+     */
+  }
+
+  @Get('hint')
+  async getHint(@Query('size', ParseIntPipe) size: number) {
+    return await this.appService.getHints(size);
+    /**
+      This endpoint is used to retrieve a hint for the current game.
+      When the user requests a hint, the frontend sends a request to this endpoint.
+      The backend then generates a hint for the current game and returns it to the user.
+      The response typically includes the hint, which might be a letter or a word.
      */
   }
 }

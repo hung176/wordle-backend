@@ -8,6 +8,7 @@ import { SessionModule } from './session/session.module';
 import { AppService } from './app.service';
 import { WordModule } from './word/word.module';
 import { UserModule } from './user/user.module';
+import { AIModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     WordModule,
     SessionModule,
+    AIModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { WordService } from './word/word.service';
 import { UserService } from './user/user.service';
 import { SessionService } from './session/session.service';
 import { STATUS, SessionType, WordPosition } from './session/types';
+import { AIService } from './ai/ai.service';
 
 const MAX_ATTEMPT = 6;
 
@@ -12,9 +13,10 @@ export class AppService {
     private wordService: WordService,
     private userService: UserService,
     private sessionService: SessionService,
+    private readonly aiService: AIService,
   ) {}
 
-  async startGame(): Promise<Partial<SessionType>> {
+  async startGame(): Promise<any> {
     try {
       // get userId by JWT - from auth service
       const userId = '65192d0e16e9f892f21ea1cf-1';
@@ -50,7 +52,7 @@ export class AppService {
         status: STATUS.PLAYING,
       });
     } catch (error) {
-      throw new BadRequestException('Can not start new game');
+      throw new BadRequestException('Can not start new game, ' + error.message);
     }
   }
 
@@ -125,6 +127,18 @@ export class AppService {
     } catch (error) {
       throw new BadRequestException('Can not end game');
     }
+  }
+
+  async getHints(text: string, length: number) {
+    const response = await this.aiService.textCompletion(text, length);
+    let hints: string;
+    await response.forEach((value) => {
+      const {
+        data: { outputs },
+      } = value;
+      hints = outputs[0].text;
+    });
+    return JSON.parse(hints);
   }
 
   private calPosition(word: string, guess: string, attempts: WordPosition[]) {

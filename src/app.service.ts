@@ -16,7 +16,7 @@ export class AppService {
     private readonly aiService: AIService,
   ) {}
 
-  async startGame(): Promise<any> {
+  async startGame(): Promise<Partial<SessionType>> {
     try {
       // get userId by JWT - from auth service
       const userId = '65192d0e16e9f892f21ea1cf-1';
@@ -129,23 +129,27 @@ export class AppService {
     }
   }
 
-  async getHints(size: number): Promise<string[]> {
-    const userId = '65192d0e16e9f892f21ea1cf';
+  async getHints(size: number): Promise<any> {
+    const userId = '65192d0e16e9f892f21ea1cf-1';
     const { wordToGuess } = await this.sessionService.findActiveSessionByUser(
       userId,
     );
     if (!wordToGuess) throw new BadRequestException('Word not found');
 
     try {
-      const response = await this.aiService.textCompletion(wordToGuess, size);
+      const response = await this.aiService.textCompletionCohere(
+        wordToGuess,
+        size,
+      );
       let hints: string;
       await response.forEach((value) => {
-        const {
-          data: { outputs },
-        } = value;
-        hints = outputs[0].text;
+        const { generations } = value;
+        hints = generations[0].text;
       });
-      return JSON.parse(hints);
+      const startIndex = hints.indexOf('```');
+      const endIndex = hints.lastIndexOf('```');
+      const subString = hints.substring(startIndex + 7, endIndex);
+      return JSON.parse(subString);
     } catch (error) {
       throw new BadRequestException('Can not get hints ', error.message);
     }

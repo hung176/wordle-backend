@@ -6,4 +6,6 @@ export default () => ({
   dbName: process.env.MONGO_DB,
   aiCortextUrl: process.env.AI_CORTEX_URL,
   aiCortextApiKey: process.env.AI_CORTEX_TOKEN,
+  aiCohereUrl: process.env.AI_COHERE_URL,
+  aiCohereApiKey: process.env.AI_COHERE_TOKEN,
 });

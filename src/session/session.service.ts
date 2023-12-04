@@ -11,10 +11,10 @@ export class SessionService {
   ) {}
 
   async create(session: SessionType) {
-    console.log('session', session);
     const newSession = await this.sessionModel.create(session);
     return {
       sessionId: newSession._id,
+      userId: session.userId,
       attempts: newSession.attempts,
       attemptsRemaining: newSession.attemptsRemaining,
       status: newSession.status,

@@ -17,12 +17,12 @@ export class AppService {
     private readonly aiService: AIService,
   ) {}
 
-  async startGame(): Promise<Partial<SessionType>> {
+  async startGame(userId: string): Promise<Partial<SessionType>> {
     try {
       // get userId by JWT - from auth service
-      const userId = 'check_userJWT';
+      // const userId = 'check_userJWT';
 
-      if (!userId) throw new BadRequestException('User not found');
+      // if (!userId) throw new BadRequestException('User not found');
 
       // check JWT is valid or expired -> use auth service
 

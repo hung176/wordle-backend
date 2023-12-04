@@ -6,8 +6,8 @@ import { WordGuessDto } from './app.dto';
 export class AppController {
   constructor(private appService: AppService) {}
   @Post('start')
-  async startGame() {
-    return await this.appService.startGame();
+  async startGame(@Body() { userId }: { userId: string }) {
+    return await this.appService.startGame(userId);
 
     /*
       This endpoint is used to start a new game session.

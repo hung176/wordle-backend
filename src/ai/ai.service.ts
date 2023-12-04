@@ -3,7 +3,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { Observable, map } from 'rxjs';
-import { CohereClient } from 'cohere-ai';
 
 @Injectable()
 export class AIService {

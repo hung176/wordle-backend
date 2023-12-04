@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { WordGuessDto } from './app.dto';
 
@@ -58,8 +51,8 @@ export class AppController {
   }
 
   @Get('hint')
-  async getHint(@Query('size', ParseIntPipe) size: number) {
-    return await this.appService.getHints(size);
+  async getHint(@Query('sessionId') sessionId: string) {
+    return await this.appService.getHints(sessionId);
     /**
       This endpoint is used to retrieve a hint for the current game.
       When the user requests a hint, the frontend sends a request to this endpoint.

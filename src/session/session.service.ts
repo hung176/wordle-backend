@@ -11,6 +11,7 @@ export class SessionService {
   ) {}
 
   async create(session: SessionType) {
+    console.log('session', session);
     const newSession = await this.sessionModel.create(session);
     return {
       sessionId: newSession._id,
@@ -37,7 +38,7 @@ export class SessionService {
       .lean();
 
     if (!session) {
-      throw new BadRequestException('Session not found');
+      return null;
     }
 
     return {

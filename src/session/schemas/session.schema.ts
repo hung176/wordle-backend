@@ -13,6 +13,9 @@ export class Session {
   @Prop()
   wordToGuess: string;
 
+  @Prop({ type: [String], required: false })
+  hints: string[];
+
   @Prop()
   attemptsRemaining: number;
 

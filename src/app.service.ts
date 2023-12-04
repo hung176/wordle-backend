@@ -4,6 +4,7 @@ import { UserService } from './user/user.service';
 import { SessionService } from './session/session.service';
 import { STATUS, SessionType, WordPosition } from './session/types';
 import { AIService } from './ai/ai.service';
+import { randomUUID } from 'crypto';
 
 const MAX_ATTEMPT = 6;
 
@@ -19,7 +20,7 @@ export class AppService {
   async startGame(): Promise<Partial<SessionType>> {
     try {
       // get userId by JWT - from auth service
-      const userId = '65192d0e16e9f892f21ea1cf-1';
+      const userId = 'check_userJWT';
 
       if (!userId) throw new BadRequestException('User not found');
 
@@ -41,11 +42,16 @@ export class AppService {
         };
       }
 
+      // temporary create new user - will be removed after auth service is done
+      const { userId: newUserId } = await this.userService.create({
+        email: `${randomUUID()}@abc.com`,
+        password: '123456',
+      });
       // if no, create new game session
       const wordToGuess = await this.wordService.random();
 
       return await this.sessionService.create({
-        userId,
+        userId: newUserId,
         wordToGuess,
         attempts: [],
         attemptsRemaining: MAX_ATTEMPT,
@@ -59,9 +65,13 @@ export class AppService {
   async submitGuess(guess: string) {
     try {
       // get userId by JWT - from auth service
-      const userId = '65192d0e16e9f892f21ea1cf-1';
+      const userId = '656d90995d45f2d5af870c5c';
+
+      if (!userId) throw new BadRequestException('User not found');
 
       // check JWT is valid or expired -> use auth service
+      const isUserValid = true;
+      if (!isUserValid) throw new BadRequestException('User is not valid');
 
       // get the word to guess from session service
       const {
@@ -129,18 +139,12 @@ export class AppService {
     }
   }
 
-  async getHints(size: number): Promise<any> {
-    const userId = '65192d0e16e9f892f21ea1cf-1';
-    const { wordToGuess } = await this.sessionService.findActiveSessionByUser(
-      userId,
-    );
+  async getHints(sessionId: string): Promise<string[]> {
+    const { wordToGuess } = await this.sessionService.getById(sessionId);
     if (!wordToGuess) throw new BadRequestException('Word not found');
 
     try {
-      const response = await this.aiService.textCompletionCohere(
-        wordToGuess,
-        size,
-      );
+      const response = await this.aiService.textCompletionCohere(wordToGuess);
       let hints: string;
       await response.forEach((value) => {
         const { generations } = value;

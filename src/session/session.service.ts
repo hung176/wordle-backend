@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { Session, SessionDocument } from './schemas/session.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { STATUS, SessionType } from './types';
+import { CreateSessionDto } from './dto/create-session.dto';
 
 @Injectable()
 export class SessionService {
@@ -10,7 +11,7 @@ export class SessionService {
     @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
   ) {}
 
-  async create(session: SessionType) {
+  async create(session: CreateSessionDto) {
     const newSession = await this.sessionModel.create(session);
     return {
       sessionId: newSession._id,
@@ -21,11 +22,11 @@ export class SessionService {
     };
   }
 
-  async getById(sessionId: string) {
+  async getSessionById(sessionId: string) {
     return await this.sessionModel.findOne({ _id: sessionId }).lean();
   }
 
-  async getByUserId(userId: string) {
+  async getSessionByUserId(userId: string) {
     return await this.sessionModel.find({ userId }).lean();
   }
 
@@ -60,6 +61,7 @@ export class SessionService {
       attempts: session.attempts,
       attemptsRemaining: session.attemptsRemaining,
       status: session.status,
+      keyboardColor: session.keyboardColor,
     };
   }
 }

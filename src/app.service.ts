@@ -2,9 +2,11 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { WordService } from './word/word.service';
 import { UserService } from './user/user.service';
 import { SessionService } from './session/session.service';
-import { STATUS, SessionType, WordPosition } from './session/types';
+import { STATUS, SessionResponse } from './session/types';
 import { AIService } from './ai/ai.service';
 import { randomUUID } from 'crypto';
+import { WordGuessDto } from './app.dto';
+import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
 
 const MAX_ATTEMPT = 6;
 
@@ -17,8 +19,9 @@ export class AppService {
     private readonly aiService: AIService,
   ) {}
 
-  async startGame(userId: string): Promise<Partial<SessionType>> {
+  async startGame(userIdReal: string): Promise<SessionResponse> {
     try {
+      const userId = '6599757b2415f6d4633517a6';
       // get userId by JWT - from auth service
       // const userId = 'check_userJWT';
 
@@ -62,29 +65,32 @@ export class AppService {
     }
   }
 
-  async submitGuess(guess: string) {
+  async submitGuess({
+    sessionId,
+    guess,
+  }: WordGuessDto): Promise<SessionResponse> {
     try {
-      // get userId by JWT - from auth service
-      const userId = '656d90995d45f2d5af870c5c';
+      // check the guess is valid english word
+      const isEnglishWord = await this.wordService.isEnglishWord(guess);
 
-      if (!userId) throw new BadRequestException('User not found');
+      if (!isEnglishWord) {
+        throw new BadRequestException('Invalid guess');
+      }
 
-      // check JWT is valid or expired -> use auth service
-      const isUserValid = true;
-      if (!isUserValid) throw new BadRequestException('User is not valid');
-
-      // get the word to guess from session service
       const {
-        sessionId,
         wordToGuess,
         attempts = [],
         attemptsRemaining = MAX_ATTEMPT,
-      } = await this.sessionService.findActiveSessionByUser(userId);
-      const newAttempts = this.calPosition(wordToGuess, guess, attempts);
+      } = await this.sessionService.getSessionById(sessionId);
+      const newAttempts = calculateLetterEachRow(wordToGuess, guess, attempts);
       const newAttemptsRemaining = attemptsRemaining - 1;
+
+      // before update, calculate what color each character in keyboard
+      const keyboardColor = calculateLetterKeyBoard(newAttempts);
       await this.sessionService.update(sessionId, {
         attempts: newAttempts,
         attemptsRemaining: newAttemptsRemaining,
+        keyboardColor,
       });
 
       // compare the word to guess with the submitted word
@@ -140,7 +146,7 @@ export class AppService {
   }
 
   async getHints(sessionId: string): Promise<string[]> {
-    const { wordToGuess } = await this.sessionService.getById(sessionId);
+    const { wordToGuess } = await this.sessionService.getSessionById(sessionId);
     if (!wordToGuess) throw new BadRequestException('Word not found');
 
     try {
@@ -157,23 +163,5 @@ export class AppService {
     } catch (error) {
       throw new BadRequestException('Can not get hints ', error.message);
     }
-  }
-
-  private calPosition(word: string, guess: string, attempts: WordPosition[]) {
-    const green: string[] = [];
-    const yellow: string[] = [];
-    const black: string[] = [];
-    for (let i = 0; i < word.length; i++) {
-      const charWord = word[i];
-      const charGuess = guess[i];
-      if (charWord === charGuess) {
-        green.push(charGuess);
-      } else if (word.includes(charGuess)) {
-        yellow.push(charGuess);
-      } else {
-        black.push(charGuess);
-      }
-    }
-    return [...attempts, { green, yellow, black }];
   }
 }

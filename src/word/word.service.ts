@@ -20,4 +20,9 @@ export class WordService {
     const all = await this.wordModel.find({}, { word: 1 });
     return all.map(({ word }) => word);
   }
+
+  async isEnglishWord(word: string): Promise<boolean> {
+    const count = await this.wordModel.count({ word });
+    return count > 0;
+  }
 }

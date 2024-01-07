@@ -8,16 +8,24 @@ export enum STATUS {
 }
 
 export type WordPosition = {
+  guess: string;
   green: string[];
   yellow: string[];
   black: string[];
 };
 
 export type SessionType = {
-  sessionId?: string;
+  sessionId: string;
   userId: string;
   wordToGuess: string;
   attemptsRemaining: number;
   attempts: WordPosition[];
   status: STATUS;
+  keyboardColor: KeyboardColor;
 };
+
+export type KeyboardColor = {
+  [key: string]: string;
+};
+
+export type SessionResponse = Partial<SessionType>;

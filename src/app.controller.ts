@@ -2,9 +2,10 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { WordGuessDto } from './app.dto';
 
-@Controller()
+@Controller('api')
 export class AppController {
   constructor(private appService: AppService) {}
+
   @Post('start')
   async startGame(@Body() { userId }: { userId: string }) {
     return await this.appService.startGame(userId);
@@ -18,8 +19,8 @@ export class AppController {
   }
 
   @Post('guess')
-  async submitGuess(@Body() { guess }: WordGuessDto) {
-    return await this.appService.submitGuess(guess);
+  async submitGuess(@Body() guessBody: WordGuessDto) {
+    return await this.appService.submitGuess(guessBody);
     /*
       This endpoint is used for submitting word guesses during an active game.
       When a user makes a guess in the game (e.g., entering a 5-letter word), the frontend sends a request to this endpoint with the guessed word.

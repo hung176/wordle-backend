@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
-import { KeyboardColor, STATUS, WordPosition } from '../types';
+import { KeyboardColor, STATUS, Attempt } from '../types';
 
 export type SessionDocument = Session & Document;
 
@@ -20,7 +20,7 @@ export class Session {
   attemptsRemaining: number;
 
   @Prop()
-  attempts: WordPosition[];
+  attempts: Attempt[];
 
   @Prop()
   status: STATUS;

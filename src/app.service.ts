@@ -42,6 +42,7 @@ export class AppService {
           attempts: activeSession.attempts,
           attemptsRemaining: activeSession.attemptsRemaining,
           status: activeSession.status,
+          keyboardColor: activeSession.keyboardColor,
         };
       }
 
@@ -53,13 +54,21 @@ export class AppService {
       // if no, create new game session
       const wordToGuess = await this.wordService.random();
 
-      return await this.sessionService.create({
+      const sessionCreated = await this.sessionService.create({
         userId: newUserId,
         wordToGuess,
         attempts: [],
         attemptsRemaining: MAX_ATTEMPT,
         status: STATUS.PLAYING,
       });
+      return {
+        sessionId: sessionCreated._id,
+        userId: sessionCreated.userId,
+        attempts: sessionCreated.attempts,
+        attemptsRemaining: sessionCreated.attemptsRemaining,
+        status: sessionCreated.status,
+        keyboardColor: sessionCreated.keyboardColor,
+      };
     } catch (error) {
       throw new BadRequestException('Can not start new game, ' + error.message);
     }
@@ -71,18 +80,21 @@ export class AppService {
   }: WordGuessDto): Promise<SessionResponse> {
     try {
       // check the guess is valid english word
-      const isEnglishWord = await this.wordService.isEnglishWord(guess);
+      // const isEnglishWord = await this.wordService.isEnglishWord(guess);
 
-      if (!isEnglishWord) {
-        throw new BadRequestException('Invalid guess');
-      }
+      // if (!isEnglishWord) {
+      //   throw new BadRequestException('Invalid guess');
+      // }
 
       const {
         wordToGuess,
         attempts = [],
         attemptsRemaining = MAX_ATTEMPT,
       } = await this.sessionService.getSessionById(sessionId);
-      const newAttempts = calculateLetterEachRow(wordToGuess, guess, attempts);
+      const newAttempts = [
+        ...attempts,
+        calculateLetterEachRow(wordToGuess, guess),
+      ];
       const newAttemptsRemaining = attemptsRemaining - 1;
 
       // before update, calculate what color each character in keyboard

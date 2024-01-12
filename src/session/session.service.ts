@@ -11,15 +11,8 @@ export class SessionService {
     @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
   ) {}
 
-  async create(session: CreateSessionDto) {
-    const newSession = await this.sessionModel.create(session);
-    return {
-      sessionId: newSession._id,
-      userId: session.userId,
-      attempts: newSession.attempts,
-      attemptsRemaining: newSession.attemptsRemaining,
-      status: newSession.status,
-    };
+  async create(session: CreateSessionDto): Promise<SessionDocument> {
+    return await this.sessionModel.create(session);
   }
 
   async getSessionById(sessionId: string) {
@@ -48,6 +41,7 @@ export class SessionService {
       attemptsRemaining: session.attemptsRemaining,
       status: session.status,
       wordToGuess: session.wordToGuess,
+      keyboardColor: session.keyboardColor,
     };
   }
 

@@ -7,19 +7,22 @@ export enum STATUS {
   ENDED = 'ENDED',
 }
 
-export type WordPosition = {
-  guess: string;
-  green: string[];
-  yellow: string[];
-  black: string[];
+export type Letter = {
+  letter: string;
+  position: number;
+  green: boolean;
+  yellow: boolean;
+  black: boolean;
 };
+
+export type Attempt = Letter[];
 
 export type SessionType = {
   sessionId: string;
   userId: string;
   wordToGuess: string;
   attemptsRemaining: number;
-  attempts: WordPosition[];
+  attempts: Attempt[];
   status: STATUS;
   keyboardColor: KeyboardColor;
 };

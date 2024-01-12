@@ -1,36 +1,29 @@
-import { Key } from 'readline';
-import { KeyboardColor, WordPosition } from './session/types';
+import { KeyboardColor, Attempt } from './session/types';
 
-export function calculateLetterEachRow(
-  word: string,
-  guess: string,
-  attempts: WordPosition[],
-): WordPosition[] {
-  const green: string[] = [];
-  const yellow: string[] = [];
-  const black: string[] = [];
-  for (let i = 0; i < word.length; i++) {
-    const charWord = word[i];
-    const charGuess = guess[i];
-    if (charWord === charGuess) {
-      green.push(charGuess);
-    } else if (word.includes(charGuess)) {
-      yellow.push(charGuess);
-    } else {
-      black.push(charGuess);
-    }
-  }
-  return [...attempts, { guess, green, yellow, black }];
+export function calculateLetterEachRow(word: string, guess: string): Attempt {
+  const result = guess.split('').map((char: string, index: number) => ({
+    letter: char,
+    position: index,
+    green: char === word[index],
+    yellow: char !== word[index] && word.includes(char),
+    black: char !== word[index] && !word.includes(char),
+  }));
+
+  return result;
 }
 
-export function calculateLetterKeyBoard(
-  attempts: WordPosition[],
-): KeyboardColor {
+export function calculateLetterKeyBoard(attempts: Attempt[]): KeyboardColor {
   const result: KeyboardColor = {};
 
-  const green = attempts.map((attempt) => attempt.green).flat();
-  const yellow = attempts.map((attempt) => attempt.yellow).flat();
-  const black = attempts.map((attempt) => attempt.black).flat();
+  const getLetterByColor = (color: string) =>
+    attempts
+      .map((attempt) =>
+        attempt.filter((letter) => letter[color]).map(({ letter }) => letter),
+      )
+      .flat();
+  const green = getLetterByColor('green');
+  const yellow = getLetterByColor('yellow');
+  const black = getLetterByColor('black');
 
   for (const char of green) {
     if (!result[char]) {

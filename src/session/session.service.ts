@@ -42,6 +42,7 @@ export class SessionService {
       status: session.status,
       wordToGuess: session.wordToGuess,
       keyboardColor: session.keyboardColor,
+      hints: session.hints,
     };
   }
 

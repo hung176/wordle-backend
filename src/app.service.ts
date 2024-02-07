@@ -46,6 +46,7 @@ export class AppService {
           attemptsRemaining: activeSession.attemptsRemaining,
           status: activeSession.status,
           keyboardColor: activeSession.keyboardColor,
+          hints: activeSession.hints,
         };
       }
 
@@ -71,6 +72,7 @@ export class AppService {
         attemptsRemaining: sessionCreated.attemptsRemaining,
         status: sessionCreated.status,
         keyboardColor: sessionCreated.keyboardColor,
+        hints: sessionCreated.hints,
       };
     } catch (error) {
       throw new BadRequestException('Can not start new game, ' + error.message);
@@ -161,7 +163,7 @@ export class AppService {
     }
   }
 
-  async getHints(sessionId: string): Promise<string[]> {
+  async putHints(sessionId: string): Promise<void> {
     const { wordToGuess } = await this.sessionService.getSessionById(sessionId);
     if (!wordToGuess) throw new BadRequestException('Word not found');
 
@@ -172,7 +174,6 @@ export class AppService {
         const { generations } = value;
         hintResponse = generations[0].text;
       });
-      console.log(hintResponse);
       const startIndex = hintResponse.indexOf('```');
       const endIndex = hintResponse.lastIndexOf('```');
       const subString = hintResponse.substring(startIndex + 7, endIndex);
@@ -180,9 +181,8 @@ export class AppService {
       await this.sessionService.update(sessionId, {
         hints,
       });
-      return hints;
+      return;
     } catch (error) {
-      console.log(error);
       throw new BadRequestException('Can not get hints ', error.message);
     }
   }

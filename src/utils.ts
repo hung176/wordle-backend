@@ -6,7 +6,7 @@ export function calculateLetterEachRow(word: string, guess: string): Attempt {
     position: index,
     green: char === word[index],
     yellow: char !== word[index] && word.includes(char),
-    black: char !== word[index] && !word.includes(char),
+    gray: char !== word[index] && !word.includes(char),
   }));
 
   return result;
@@ -23,7 +23,7 @@ export function calculateLetterKeyBoard(attempts: Attempt[]): KeyboardColor {
       .flat();
   const green = getLetterByColor('green');
   const yellow = getLetterByColor('yellow');
-  const black = getLetterByColor('black');
+  const gray = getLetterByColor('gray');
 
   for (const char of green) {
     if (!result[char]) {
@@ -31,9 +31,9 @@ export function calculateLetterKeyBoard(attempts: Attempt[]): KeyboardColor {
     }
   }
 
-  for (const char of black) {
+  for (const char of gray) {
     if (!result[char]) {
-      result[char] = 'black';
+      result[char] = 'gray';
     }
   }
 

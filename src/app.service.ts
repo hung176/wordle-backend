@@ -21,7 +21,10 @@ export class AppService {
 
   async startGame(userIdReal: string): Promise<SessionResponse> {
     try {
-      const userId = '6599757b2415f6d4633517a6';
+      // Note: need to more check in the case create new session based on userId
+      // Currently, if refresh page, it will create new session for user who don't have active session
+
+      const userId = '65c1b7e7a19c98ea602bc768';
       // get userId by JWT - from auth service
       // const userId = 'check_userJWT';
 
@@ -80,11 +83,11 @@ export class AppService {
   }: WordGuessDto): Promise<SessionResponse> {
     try {
       // check the guess is valid english word
-      // const isEnglishWord = await this.wordService.isEnglishWord(guess);
+      const isEnglishWord = await this.wordService.isEnglishWord(guess);
 
-      // if (!isEnglishWord) {
-      //   throw new BadRequestException('Invalid guess');
-      // }
+      if (!isEnglishWord) {
+        throw new BadRequestException('Word is not in the list');
+      }
 
       const {
         wordToGuess,
@@ -137,21 +140,22 @@ export class AppService {
     }
   }
 
-  async endGame() {
+  async endGame(sessionId: string) {
     try {
       // get userId by JWT - from auth service
       // check JWT is valid or expired -> use auth service
-      const userId = '65192d0e16e9f892f21ea1cf-1';
+      // const userId = '65192d0e16e9f892f21ea1cf-1';
 
       // get the sessionId with userId and status is PLAYING
-      const { sessionId } = await this.sessionService.findActiveSessionByUser(
-        userId,
-      );
+      // const { sessionId } = await this.sessionService.findActiveSessionByUser(
+      //   userId,
+      // );
 
       // update status to ENDED
-      return await this.sessionService.update(sessionId, {
+      await this.sessionService.update(sessionId, {
         status: STATUS.ENDED,
       });
+      return await this.sessionService.getSessionById(sessionId);
     } catch (error) {
       throw new BadRequestException('Can not end game');
     }
@@ -163,16 +167,22 @@ export class AppService {
 
     try {
       const response = await this.aiService.textCompletionCohere(wordToGuess);
-      let hints: string;
+      let hintResponse: string;
       await response.forEach((value) => {
         const { generations } = value;
-        hints = generations[0].text;
+        hintResponse = generations[0].text;
       });
-      const startIndex = hints.indexOf('```');
-      const endIndex = hints.lastIndexOf('```');
-      const subString = hints.substring(startIndex + 7, endIndex);
-      return JSON.parse(subString);
+      console.log(hintResponse);
+      const startIndex = hintResponse.indexOf('```');
+      const endIndex = hintResponse.lastIndexOf('```');
+      const subString = hintResponse.substring(startIndex + 7, endIndex);
+      const hints = JSON.parse(subString);
+      await this.sessionService.update(sessionId, {
+        hints,
+      });
+      return hints;
     } catch (error) {
+      console.log(error);
       throw new BadRequestException('Can not get hints ', error.message);
     }
   }

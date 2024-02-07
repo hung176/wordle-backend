@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { WordGuessDto } from './app.dto';
 
-@Controller('api')
+@Controller('wordle')
 export class AppController {
   constructor(private appService: AppService) {}
 
@@ -41,8 +41,8 @@ export class AppController {
   }
 
   @Post('end')
-  async endGame() {
-    return await this.appService.endGame();
+  async endGame(@Body('sessionId') sessionId: string) {
+    return await this.appService.endGame(sessionId);
     /**
       This endpoint is used to end a game session.
       When the user wants to end the game, they can make a request to this endpoint.

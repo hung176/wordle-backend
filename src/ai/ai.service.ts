@@ -69,9 +69,9 @@ export class AIService {
       You will be provided with text delimited by triple quotes.
       If it contains a english word, you will be asked to provide some hints
       for that word to help the user guess the word in wordle game.
-      Your task is to provide ${size} hints for english word with json format as below:
+      Your task is to generate ${size} hints for english word with json format as below:
       ["<hint1>", "<hint2>", "<hint3>", ....]
-      Each hint should be a sentence.
+      Each hint should be a sentence and in each hint do not mention to the word.
       The word is """${text}"""
     `;
 

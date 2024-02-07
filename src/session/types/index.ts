@@ -12,7 +12,7 @@ export type Letter = {
   position: number;
   green: boolean;
   yellow: boolean;
-  black: boolean;
+  gray: boolean;
 };
 
 export type Attempt = Letter[];
@@ -25,6 +25,7 @@ export type SessionType = {
   attempts: Attempt[];
   status: STATUS;
   keyboardColor: KeyboardColor;
+  hints: string[];
 };
 
 export type KeyboardColor = {

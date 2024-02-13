@@ -1,17 +1,10 @@
-import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
 import { STATUS } from '../types';
 
 export class CreateSessionDto {
-  @IsString()
-  @IsNotEmpty()
-  userId: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // userId: string;
 
   @IsString()
   @Length(5)

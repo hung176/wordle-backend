@@ -7,10 +7,10 @@ export type SessionDocument = Session & Document;
 
 @Schema({ timestamps: true, versionKey: false })
 export class Session {
-  @Prop({ type: String, required: true, ref: User.name })
-  userId: string;
+  // @Prop({ type: String, required: true, ref: User.name })
+  // userId: string;
 
-  @Prop()
+  @Prop({ type: String, required: true })
   wordToGuess: string;
 
   @Prop({ type: [String], required: false })

@@ -63,16 +63,16 @@ export class AIService {
       .pipe(map((response) => response.data));
   }
 
-  async textCompletionCohere(text: string, size = 3) {
+  async textCompletionCohere(text: string) {
     const url = `${this.aiCohereUrl}/v1/generate`;
     const textCompletion = `
       You will be provided with text delimited by triple quotes.
-      If it contains a english word, you will be asked to provide some hints
+      You will be asked to provide only one hint
       for that word to help the user guess the word in wordle game.
-      Your task is to generate ${size} hints for english word with json format as below:
-      ["<hint1>", "<hint2>", "<hint3>", ....]
-      Each hint should be a sentence and in each hint do not mention to the word.
+      Your task is to generate one hint for this word with format as below:
+      "The hint for the word is <hint>".
       The word is """${text}"""
+      Important: Please provide only one hint and do not mention the word in the text response.
     `;
 
     return await this.httpService

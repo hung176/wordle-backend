@@ -1,10 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { WordService } from './word/word.service';
 import { UserService } from './user/user.service';
 import { SessionService } from './session/session.service';
 import { STATUS, SessionResponse } from './session/types';
 import { AIService } from './ai/ai.service';
-import { randomUUID } from 'crypto';
 import { WordGuessDto } from './app.dto';
 import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
 
@@ -16,75 +15,29 @@ export class AppService {
     private wordService: WordService,
     private userService: UserService,
     private sessionService: SessionService,
-    private readonly aiService: AIService,
+    private readonly aiService: AIService
   ) {}
 
-  async startGame(userIdReal: string): Promise<SessionResponse> {
+  async startGame(sessionId: string | undefined): Promise<SessionResponse> {
     try {
-      // Note: need to more check in the case create new session based on userId
-      // Currently, if refresh page, it will create new session for user who don't have active session
-
-      const userId = '65c1b7e7a19c98ea602bc768';
-      // get userId by JWT - from auth service
-      // const userId = 'check_userJWT';
-
-      // if (!userId) throw new BadRequestException('User not found');
-
-      // check JWT is valid or expired -> use auth service
-
-      // check if user has active game session
-      const activeSession = await this.sessionService.findActiveSessionByUser(
-        userId,
-      );
-
-      // if yes, return existing game session
-      if (activeSession) {
-        return {
-          userId,
-          sessionId: activeSession.sessionId,
-          attempts: activeSession.attempts,
-          attemptsRemaining: activeSession.attemptsRemaining,
-          status: activeSession.status,
-          keyboardColor: activeSession.keyboardColor,
-          hints: activeSession.hints,
-        };
+      if (!sessionId) {
+        const wordToGuess = await this.wordService.random();
+        return await this.sessionService.create({
+          wordToGuess,
+          attempts: [],
+          attemptsRemaining: MAX_ATTEMPT,
+          status: STATUS.PLAYING,
+        });
       }
 
-      // temporary create new user - will be removed after auth service is done
-      const { userId: newUserId } = await this.userService.create({
-        email: `${randomUUID()}@abc.com`,
-        password: '123456',
-      });
-      // if no, create new game session
-      const wordToGuess = await this.wordService.random();
-
-      const sessionCreated = await this.sessionService.create({
-        userId: newUserId,
-        wordToGuess,
-        attempts: [],
-        attemptsRemaining: MAX_ATTEMPT,
-        status: STATUS.PLAYING,
-      });
-      return {
-        sessionId: sessionCreated._id,
-        userId: sessionCreated.userId,
-        attempts: sessionCreated.attempts,
-        attemptsRemaining: sessionCreated.attemptsRemaining,
-        status: sessionCreated.status,
-        keyboardColor: sessionCreated.keyboardColor,
-        hints: sessionCreated.hints,
-      };
+      return await this.sessionService.getSessionById(sessionId);
     } catch (error) {
       throw new BadRequestException('Can not start new game, ' + error.message);
     }
   }
 
-  async submitGuess({
-    sessionId,
-    guess,
-  }: WordGuessDto): Promise<SessionResponse> {
+  async submitGuess({ sessionId, guess }: WordGuessDto): Promise<SessionResponse> {
     try {
-      // check the guess is valid english word
       const isEnglishWord = await this.wordService.isEnglishWord(guess);
 
       if (!isEnglishWord) {
@@ -96,10 +49,7 @@ export class AppService {
         attempts = [],
         attemptsRemaining = MAX_ATTEMPT,
       } = await this.sessionService.getSessionById(sessionId);
-      const newAttempts = [
-        ...attempts,
-        calculateLetterEachRow(wordToGuess, guess),
-      ];
+      const newAttempts = [...attempts, calculateLetterEachRow(wordToGuess, guess)];
       const newAttemptsRemaining = attemptsRemaining - 1;
 
       // before update, calculate what color each character in keyboard
@@ -138,52 +88,57 @@ export class AppService {
         status: STATUS.ENDED,
       });
     } catch (e) {
+      console.log('error', e);
       throw new BadRequestException(`Can not submit guess - ${e.message}`);
     }
   }
 
   async endGame(sessionId: string) {
     try {
-      // get userId by JWT - from auth service
-      // check JWT is valid or expired -> use auth service
-      // const userId = '65192d0e16e9f892f21ea1cf-1';
-
-      // get the sessionId with userId and status is PLAYING
-      // const { sessionId } = await this.sessionService.findActiveSessionByUser(
-      //   userId,
-      // );
-
-      // update status to ENDED
-      await this.sessionService.update(sessionId, {
+      return await this.sessionService.update(sessionId, {
         status: STATUS.ENDED,
       });
-      return await this.sessionService.getSessionById(sessionId);
     } catch (error) {
       throw new BadRequestException('Can not end game');
     }
   }
 
-  async putHints(sessionId: string): Promise<void> {
-    const { wordToGuess } = await this.sessionService.getSessionById(sessionId);
+  async getHints(sessionId: string): Promise<string> {
+    const { wordToGuess, hints } = await this.sessionService.getSessionById(sessionId);
     if (!wordToGuess) throw new BadRequestException('Word not found');
 
     try {
       const response = await this.aiService.textCompletionCohere(wordToGuess);
-      let hintResponse: string;
+      let hint: string;
       await response.forEach((value) => {
         const { generations } = value;
-        hintResponse = generations[0].text;
+        hint = generations[0].text;
       });
-      const startIndex = hintResponse.indexOf('```');
-      const endIndex = hintResponse.lastIndexOf('```');
-      const subString = hintResponse.substring(startIndex + 7, endIndex);
-      const hints = JSON.parse(subString);
+
       await this.sessionService.update(sessionId, {
-        hints,
+        hints: [...hints, hint],
       });
-      return;
+
+      return hint;
     } catch (error) {
       throw new BadRequestException('Can not get hints ', error.message);
     }
   }
+
+  // async reveal(sessionId: string): Promise<{ letter: string; position: number }> {
+  //   const { wordToGuess = '', attempts } = await this.sessionService.getSessionById(sessionId);
+
+  //   const isRevealed = (letterInput: string, pos: number) =>
+  //     attempts.some((attempt) =>
+  //       attempt.some(({ letter, position, green }) => letterInput === letter && pos === position && green)
+  //     );
+
+  //   for (let i = 0; i < wordToGuess.length; i++) {
+  //     if (!isRevealed(wordToGuess[i], i)) {
+  //       return { letter: wordToGuess[i], position: i };
+  //     }
+  //   }
+
+  //   return null;
+  // }
 }

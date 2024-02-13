@@ -7,8 +7,8 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Post('start')
-  async startGame(@Body() { userId }: { userId: string }) {
-    return await this.appService.startGame(userId);
+  async startGame(@Body() { sessionId }: { sessionId: string | undefined }) {
+    return await this.appService.startGame(sessionId);
 
     /*
       This endpoint is used to start a new game session.
@@ -29,16 +29,16 @@ export class AppController {
     */
   }
 
-  @Get('result')
-  async getGameResult() {
-    // return await this.appService.getGameResult();
-    /**
-      This endpoint is used to retrieve the final result of a completed game.
-      When the user has either successfully guessed the word or exhausted their allowed attempts, the game is considered over.
-      The frontend can request the result of the game by sending a request to this endpoint.
-      The backend responds with the final outcome of the game, which might include whether the user won, lost, or achieved a certain score, and possibly the correct word.
-     */
-  }
+  // @Get('result')
+  // async getGameResult() {
+  //   // return await this.appService.getGameResult();
+  //   /**
+  //     This endpoint is used to retrieve the final result of a completed game.
+  //     When the user has either successfully guessed the word or exhausted their allowed attempts, the game is considered over.
+  //     The frontend can request the result of the game by sending a request to this endpoint.
+  //     The backend responds with the final outcome of the game, which might include whether the user won, lost, or achieved a certain score, and possibly the correct word.
+  //    */
+  // }
 
   @Post('end')
   async endGame(@Body('sessionId') sessionId: string) {
@@ -51,9 +51,9 @@ export class AppController {
      */
   }
 
-  @Put('hint')
+  @Post('hint')
   async getHint(@Body('sessionId') sessionId: string) {
-    return await this.appService.putHints(sessionId);
+    return await this.appService.getHints(sessionId);
     /**
       This endpoint is used to retrieve a hint for the current game.
       When the user requests a hint, the frontend sends a request to this endpoint.
@@ -61,4 +61,15 @@ export class AppController {
       The response typically includes the hint, which might be a letter or a word.
      */
   }
+
+  // @Get('reveal')
+  // async reveal(@Query('sessionId') sessionId: string) {
+  //   return await this.appService.reveal(sessionId);
+  //   /**
+  //     This endpoint is used to reveal the target word during an active game.
+  //     When the user requests to reveal the word (e.g., when they're stuck), the frontend sends a request to this endpoint.
+  //     The backend then reveals the target word to the user.
+  //     The response typically includes the correct word.
+  //    */
+  // }
 }

@@ -22,27 +22,12 @@ export class SessionService {
     };
   }
 
-  async getSessionById(sessionId: string): Promise<SessionResponse> {
-    const session = await this.sessionModel.findOne({ _id: sessionId });
+  async getSessionById(sessionId: string) {
+    const session = await this.sessionModel.findOne({ _id: sessionId }).lean();
     if (!session) {
       return null;
     }
-    const sessionWithOutWord = {
-      sessionId: session._id,
-      attempts: session.attempts,
-      attemptsRemaining: session.attemptsRemaining,
-      status: session.status,
-      keyboardColor: session.keyboardColor,
-      hints: session.hints,
-      wordToGuess: session.wordToGuess,
-    };
-    if (session.status === STATUS.ENDED) {
-      return {
-        ...sessionWithOutWord,
-        wordToGuess: session.wordToGuess,
-      };
-    }
-    return sessionWithOutWord;
+    return session;
   }
 
   async getSessionByUserId(userId: string) {

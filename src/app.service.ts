@@ -18,7 +18,7 @@ export class AppService {
     private readonly aiService: AIService
   ) {}
 
-  async startGame(sessionId: string | undefined): Promise<SessionResponse> {
+  async startGame(sessionId: string | null | undefined): Promise<SessionResponse> {
     try {
       if (!sessionId) {
         const wordToGuess = await this.wordService.random();
@@ -30,7 +30,27 @@ export class AppService {
         });
       }
 
-      return await this.sessionService.getSessionById(sessionId);
+      const session = await this.sessionService.getSessionById(sessionId);
+
+      if (session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED) {
+        return {
+          sessionId: session._id,
+          attempts: session.attempts,
+          attemptsRemaining: session.attemptsRemaining,
+          status: session.status,
+          keyboardColor: session.keyboardColor,
+          hints: session.hints,
+          wordToGuess: session.wordToGuess,
+        };
+      }
+      return {
+        sessionId: session._id,
+        attempts: session.attempts,
+        attemptsRemaining: session.attemptsRemaining,
+        status: session.status,
+        keyboardColor: session.keyboardColor,
+        hints: session.hints,
+      };
     } catch (error) {
       throw new BadRequestException('Can not start new game, ' + error.message);
     }

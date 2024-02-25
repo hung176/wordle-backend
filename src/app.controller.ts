@@ -7,7 +7,7 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Post('start')
-  async startGame(@Body() { sessionId }: { sessionId: string | undefined }) {
+  async startGame(@Body() { sessionId }: { sessionId: string | null | undefined }) {
     return await this.appService.startGame(sessionId);
 
     /*

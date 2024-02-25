@@ -16,11 +16,7 @@ export function calculateLetterKeyBoard(attempts: Attempt[]): KeyboardColor {
   const result: KeyboardColor = {};
 
   const getLetterByColor = (color: string) =>
-    attempts
-      .map((attempt) =>
-        attempt.filter((letter) => letter[color]).map(({ letter }) => letter),
-      )
-      .flat();
+    attempts.map((attempt) => attempt.filter((letter) => letter[color]).map(({ letter }) => letter)).flat();
   const green = getLetterByColor('green');
   const yellow = getLetterByColor('yellow');
   const gray = getLetterByColor('gray');

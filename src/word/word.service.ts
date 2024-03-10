@@ -5,9 +5,7 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class WordService {
-  constructor(
-    @InjectModel(Word.name) private readonly wordModel: Model<WordDocument>,
-  ) {}
+  constructor(@InjectModel(Word.name) private readonly wordModel: Model<WordDocument>) {}
 
   async random(): Promise<string> {
     const count = await this.wordModel.count();

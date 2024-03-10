@@ -4,9 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Word, WordSchema } from './schemas/word.schema';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Word.name, schema: WordSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: Word.name, schema: WordSchema }])],
   controllers: [],
   providers: [WordService],
   exports: [WordService],

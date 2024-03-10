@@ -20,10 +20,8 @@ import { AIModule } from './ai/ai.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const uri = configService.get<string>('dbConnectionString');
-        const dbName = configService.get<string>('dbName');
         return {
           uri,
-          dbName,
         };
       },
       inject: [ConfigService],

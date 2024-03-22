@@ -8,7 +8,7 @@ services:
       - '3333:3333'
     environment:
       - APP_PORT=3333
-      - MONGO_CONNECTION_STRING=mongodb+srv://user-01:KqjPmk99mtenka4i@cluster0.bp2fwus.mongodb.net/wordle?retryWrites=true&w=majority&appName=Cluster0
+      - MONGO_CONNECTION_STRING=mongodb://localhost:27017/wordle
       - AI_CORTEX_URL=https://api.textcortex.com/v1
       - AI_CORTEX_TOKEN=gAAAAABlafcOh97ylFeju6XhsrWbheKEs9LxRmg-OzbCCrIgNE8orUrmximJ2XqXbNmIPPJxwlRiHHLDgY_tNtal732ixAFUBcJKpLzo7Jl4J3goJvayyK1ShNCipGqfkLTwXU_-wlCR
       - AI_COHERE_URL=https://api.cohere.ai

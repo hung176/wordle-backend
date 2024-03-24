@@ -9,6 +9,12 @@ import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
 
 const MAX_ATTEMPT = 6;
 
+type WordGuessNotInList = {
+  sessionId: string;
+  wordNotInList: boolean;
+  message: string;
+};
+
 @Injectable()
 export class AppService {
   constructor(
@@ -20,7 +26,9 @@ export class AppService {
 
   async startGame(sessionId: string | null | undefined): Promise<SessionResponse> {
     try {
-      if (!sessionId) {
+      const session = await this.sessionService.getSessionById(sessionId);
+
+      if (!sessionId || !session) {
         const wordToGuess = await this.wordService.random();
         return await this.sessionService.create({
           wordToGuess,
@@ -29,8 +37,6 @@ export class AppService {
           status: STATUS.PLAYING,
         });
       }
-
-      const session = await this.sessionService.getSessionById(sessionId);
 
       if (session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED) {
         return {
@@ -56,12 +62,17 @@ export class AppService {
     }
   }
 
-  async submitGuess({ sessionId, guess }: WordGuessDto): Promise<SessionResponse> {
+  async submitGuess({ sessionId, guess }: WordGuessDto): Promise<SessionResponse | WordGuessNotInList> {
     try {
       const isEnglishWord = await this.wordService.isEnglishWord(guess);
 
       if (!isEnglishWord) {
-        throw new BadRequestException('Word is not in the list');
+        return {
+          sessionId,
+          wordNotInList: true,
+          message: 'Word is not in the list',
+        };
+        // throw new InternalServerErrorException('Word is not in the list');
       }
 
       const {

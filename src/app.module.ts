@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { WordModule } from './word/word.module';
 import { UserModule } from './user/user.module';
 import { AIModule } from './ai/ai.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AIModule } from './ai/ai.module';
       },
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     WordModule,

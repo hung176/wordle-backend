@@ -6,6 +6,7 @@ import { STATUS, SessionResponse } from './session/types';
 import { AIService } from './ai/ai.service';
 import { WordGuessDto } from './app.dto';
 import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 const MAX_ATTEMPT = 6;
 
@@ -126,6 +127,11 @@ export class AppService {
 
   async endGame(sessionId: string) {
     try {
+      const session = await this.sessionService.getSessionById(sessionId);
+      const isGameOver = session && (session.status === STATUS.SUCCESS || session.status === STATUS.FAILED);
+      if (isGameOver) {
+        return session;
+      }
       return await this.sessionService.update(sessionId, {
         status: STATUS.ENDED,
       });
@@ -156,20 +162,8 @@ export class AppService {
     }
   }
 
-  // async reveal(sessionId: string): Promise<{ letter: string; position: number }> {
-  //   const { wordToGuess = '', attempts } = await this.sessionService.getSessionById(sessionId);
-
-  //   const isRevealed = (letterInput: string, pos: number) =>
-  //     attempts.some((attempt) =>
-  //       attempt.some(({ letter, position, green }) => letterInput === letter && pos === position && green)
-  //     );
-
-  //   for (let i = 0; i < wordToGuess.length; i++) {
-  //     if (!isRevealed(wordToGuess[i], i)) {
-  //       return { letter: wordToGuess[i], position: i };
-  //     }
-  //   }
-
-  //   return null;
-  // }
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async dailyWord() {
+    console.log('Daily word');
+  }
 }

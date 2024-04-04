@@ -6,7 +6,9 @@ import { STATUS, SessionResponse } from './session/types';
 import { AIService } from './ai/ai.service';
 import { WordGuessDto } from './app.dto';
 import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
+import { ChallengeService } from './challenge/challenge.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ChallengeType } from './challenge/schemas/challenge.schema';
 
 const MAX_ATTEMPT = 6;
 
@@ -22,7 +24,8 @@ export class AppService {
     private wordService: WordService,
     private userService: UserService,
     private sessionService: SessionService,
-    private readonly aiService: AIService
+    private readonly aiService: AIService,
+    private challengeService: ChallengeService
   ) {}
 
   async startGame(sessionId: string | null | undefined): Promise<SessionResponse> {
@@ -162,8 +165,17 @@ export class AppService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
-  async dailyWord() {
-    console.log('Daily word');
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async createDailyChallenge(): Promise<boolean> {
+    const { word } = await this.wordService.getWordForToday();
+    console.log(word);
+
+    if (!word) {
+      return;
+    }
+
+    await this.challengeService.createOrUpdate(word, ChallengeType.DAILY);
+
+    return true;
   }
 }

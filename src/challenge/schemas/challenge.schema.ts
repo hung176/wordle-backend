@@ -5,8 +5,8 @@ import { Word } from 'src/word/schemas/word.schema';
 export type ChallengeDocument = Challenge & Document;
 
 export enum ChallengeType {
-  DAILYMODE = 'DAILY',
-  CHALLENGEMODE = 'CHALLENGE',
+  DAILY = 'DAILY',
+  CHALLENGE = 'CHALLENGE',
 }
 
 @Schema({ timestamps: true, versionKey: false })
@@ -15,7 +15,7 @@ export class Challenge {
   word: string;
 
   @Prop({ type: String, enum: ChallengeType, required: false, default: null })
-  type?: string;
+  type: ChallengeType;
 
   @Prop()
   createdAt: Date;

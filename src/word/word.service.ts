@@ -23,4 +23,20 @@ export class WordService {
     const count = await this.wordModel.count({ word });
     return count > 0;
   }
+
+  async getWordForToday(): Promise<Word> {
+    const dayOfYear = this.getDayOfYear();
+    const word = await this.wordModel
+      .findOne()
+      .skip(dayOfYear - 1)
+      .exec();
+    return word;
+  }
+
+  private getDayOfYear(date: Date = new Date()): number {
+    const start = new Date(date.getFullYear(), 0, 0);
+    const diff = date.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  }
 }

@@ -26,6 +26,7 @@ export class WordService {
 
   async getWordForToday(): Promise<Word> {
     const dayOfYear = this.getDayOfYear();
+    console.log('dayOfYear', dayOfYear);
     const word = await this.wordModel
       .findOne()
       .skip(dayOfYear - 1)

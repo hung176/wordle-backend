@@ -165,7 +165,7 @@ export class AppService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Asia/Ho_Chi_Minh' })
   async createDailyChallenge(): Promise<boolean> {
     const { word } = await this.wordService.getWordForToday();
     console.log(word);
@@ -174,7 +174,7 @@ export class AppService {
       return;
     }
 
-    await this.challengeService.createOrUpdate(word, ChallengeType.DAILY);
+    await this.challengeService.createOrUpdate(word);
 
     return true;
   }

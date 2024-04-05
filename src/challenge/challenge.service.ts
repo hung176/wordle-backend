@@ -19,6 +19,10 @@ export class ChallengeService {
     return await this.challengeModel.findOne({ word }).lean();
   }
 
+  async getChallengeByType(type: ChallengeType) {
+    return await this.challengeModel.find({ type }).lean();
+  }
+
   async update(id: string, updateData: any) {
     return await this.challengeModel.findOneAndUpdate({ _id: id }, updateData, { new: false }).lean();
   }
@@ -27,11 +31,12 @@ export class ChallengeService {
     return await this.challengeModel.deleteOne({ _id: id });
   }
 
-  async createOrUpdate(word: string, type: ChallengeType): Promise<ChallengeDocument> {
-    const challenge = await this.getChallengeByWord(word);
-    if (challenge) {
-      return await this.update(challenge._id, { type });
+  async createOrUpdate(word: string): Promise<ChallengeDocument> {
+    const challenge = await this.getChallengeByType(ChallengeType.DAILY);
+    if (Array.isArray(challenge) && challenge.length > 0) {
+      const daily = challenge[0];
+      return await this.update(daily._id, { word });
     }
-    return await this.create(word, type);
+    return await this.create(word, ChallengeType.DAILY);
   }
 }

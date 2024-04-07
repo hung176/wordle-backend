@@ -19,6 +19,7 @@ export type Attempt = Letter[];
 
 export type SessionType = {
   sessionId: string;
+  challengeId?: string;
   userId: string;
   wordToGuess: string;
   attemptsRemaining: number;

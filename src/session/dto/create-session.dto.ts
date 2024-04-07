@@ -19,4 +19,7 @@ export class CreateSessionDto {
 
   @IsEnum(STATUS)
   status: STATUS;
+
+  @IsString()
+  challengeId?: string;
 }

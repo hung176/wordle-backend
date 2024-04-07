@@ -8,7 +8,7 @@ import { WordGuessDto } from './app.dto';
 import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
 import { ChallengeService } from './challenge/challenge.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ChallengeType } from './challenge/schemas/challenge.schema';
+import { Challenge, ChallengeDocument, ChallengeType } from './challenge/schemas/challenge.schema';
 
 const MAX_ATTEMPT = 6;
 
@@ -28,8 +28,27 @@ export class AppService {
     private challengeService: ChallengeService
   ) {}
 
-  async startGame(sessionId: string | null | undefined): Promise<SessionResponse> {
+  async startGame(sessionId: string | null, dailyMode?: boolean): Promise<SessionResponse> {
     try {
+      if (dailyMode) {
+        const challenge = await this.challengeService.getChallengeByType(ChallengeType.DAILY);
+        if (challenge.length > 0) {
+          const wordToGuess = challenge[0]?.word;
+
+          if (!wordToGuess) {
+            throw new BadRequestException('Word not found');
+          }
+
+          return await this.sessionService.create({
+            wordToGuess,
+            challengeId: challenge[0]._id,
+            attempts: [],
+            attemptsRemaining: MAX_ATTEMPT,
+            status: STATUS.PLAYING,
+          });
+        }
+      }
+
       const session = await this.sessionService.getSessionById(sessionId);
 
       if (!sessionId || !session) {
@@ -165,10 +184,19 @@ export class AppService {
     }
   }
 
+  async startChallenge(challengeId: string): Promise<ChallengeDocument> {
+    const challenge = await this.challengeService.getChallengeById(challengeId);
+
+    if (!challenge) {
+      throw new BadRequestException('Challenge not found');
+    }
+
+    return challenge;
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Asia/Ho_Chi_Minh' })
   async createDailyChallenge(): Promise<boolean> {
     const { word } = await this.wordService.getWordForToday();
-    console.log(word);
 
     if (!word) {
       return;

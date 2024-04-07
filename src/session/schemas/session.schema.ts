@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 import { KeyboardColor, STATUS, Attempt } from '../types';
+import { Challenge } from 'src/challenge/schemas/challenge.schema';
 
 export type SessionDocument = Session & Document;
 
@@ -27,6 +28,9 @@ export class Session {
 
   @Prop({ type: Object })
   keyboardColor: KeyboardColor;
+
+  @Prop({ type: String, required: false, ref: Challenge.name })
+  challengeId?: string;
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);

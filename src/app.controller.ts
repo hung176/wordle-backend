@@ -7,8 +7,8 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Post('start')
-  async startGame(@Body() { sessionId }: { sessionId: string | null | undefined }) {
-    return await this.appService.startGame(sessionId);
+  async startGame(@Body() { sessionId, dailyMode }: { sessionId: string | null; dailyMode?: boolean }) {
+    return await this.appService.startGame(sessionId, dailyMode);
 
     /*
       This endpoint is used to start a new game session.
@@ -62,14 +62,15 @@ export class AppController {
      */
   }
 
-  // @Get('reveal')
-  // async reveal(@Query('sessionId') sessionId: string) {
-  //   return await this.appService.reveal(sessionId);
-  //   /**
-  //     This endpoint is used to reveal the target word during an active game.
-  //     When the user requests to reveal the word (e.g., when they're stuck), the frontend sends a request to this endpoint.
-  //     The backend then reveals the target word to the user.
-  //     The response typically includes the correct word.
-  //    */
-  // }
+  // /start?challengeId=123
+  @Get('start')
+  async startChallenge(@Query('challengeId') challengeId: string) {
+    return await this.appService.startChallenge(challengeId);
+    /**
+      This endpoint is used to start a challenge game session.
+      When a user wants to begin a challenge game, they make a request to this endpoint with the challenge ID.
+      The backend generates a new game session for the challenge, selects a random word, initializes game-related data (e.g., number of attempts), and returns an initial response to the user.
+      It typically returns data like the initial state of the game, such as the number of attempts allowed and any other necessary information.
+     */
+  }
 }

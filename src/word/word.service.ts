@@ -19,11 +19,6 @@ export class WordService {
     return all.map(({ word }) => word);
   }
 
-  async isEnglishWord(word: string): Promise<boolean> {
-    const count = await this.wordModel.count({ word });
-    return count > 0;
-  }
-
   async getWordForToday(): Promise<Word> {
     const dayOfYear = this.getDayOfYear();
     console.log('dayOfYear', dayOfYear);

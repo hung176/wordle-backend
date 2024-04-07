@@ -11,13 +11,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Challenge, ChallengeDocument, ChallengeType } from './challenge/schemas/challenge.schema';
 
 const MAX_ATTEMPT = 6;
-
-type WordGuessNotInList = {
-  sessionId: string;
-  wordNotInList: boolean;
-  message: string;
-};
-
 @Injectable()
 export class AppService {
   constructor(
@@ -85,19 +78,8 @@ export class AppService {
     }
   }
 
-  async submitGuess({ sessionId, guess }: WordGuessDto): Promise<SessionResponse | WordGuessNotInList> {
+  async submitGuess({ sessionId, guess }: WordGuessDto): Promise<SessionResponse> {
     try {
-      const isEnglishWord = await this.wordService.isEnglishWord(guess);
-
-      if (!isEnglishWord) {
-        return {
-          sessionId,
-          wordNotInList: true,
-          message: 'Word is not in the list',
-        };
-        // throw new InternalServerErrorException('Word is not in the list');
-      }
-
       const {
         wordToGuess,
         attempts = [],
@@ -192,6 +174,10 @@ export class AppService {
     }
 
     return challenge;
+  }
+
+  async validWords(): Promise<string[]> {
+    return this.wordService.findAll();
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Asia/Ho_Chi_Minh' })

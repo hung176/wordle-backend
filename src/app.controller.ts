@@ -73,4 +73,13 @@ export class AppController {
       It typically returns data like the initial state of the game, such as the number of attempts allowed and any other necessary information.
      */
   }
+
+  @Get('valid')
+  async wordValidity() {
+    return await this.appService.validWords();
+    /**
+      This endpoint is used to check the validity of a word.
+      Load the dictionary in the first loading to prevent too many submits an valid words.
+     */
+  }
 }

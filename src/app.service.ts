@@ -24,22 +24,23 @@ export class AppService {
   async startGame(sessionId: string | null, dailyMode?: boolean): Promise<SessionResponse> {
     try {
       if (dailyMode) {
-        const challenge = await this.challengeService.getChallengeByType(ChallengeType.DAILY);
-        if (challenge.length > 0) {
-          const wordToGuess = challenge[0]?.word;
-
-          if (!wordToGuess) {
-            throw new BadRequestException('Word not found');
-          }
-
-          return await this.sessionService.create({
-            wordToGuess,
-            challengeId: challenge[0]._id,
-            attempts: [],
-            attemptsRemaining: MAX_ATTEMPT,
-            status: STATUS.PLAYING,
-          });
+        const challenge = await this.challengeService.getWordForDailyChallenge();
+        if (!challenge) {
+          throw new BadRequestException('Challenge not found');
         }
+        const wordToGuess = challenge.word;
+
+        if (!wordToGuess) {
+          throw new BadRequestException('Word not found');
+        }
+
+        return await this.sessionService.create({
+          wordToGuess,
+          challengeId: challenge._id,
+          attempts: [],
+          attemptsRemaining: MAX_ATTEMPT,
+          status: STATUS.PLAYING,
+        });
       }
 
       const session = await this.sessionService.getSessionById(sessionId);
@@ -187,9 +188,8 @@ export class AppService {
     try {
       const challengesDaily = (await this.challengeService.getChallengeByType(ChallengeType.DAILY)) || [];
       const latestDay = challengesDaily[0]?.day || 0;
-      const allChallenges = (await this.challengeService.getAll()) || [];
+      const allWords = (await this.wordService.findAll()) || [];
       const wordsDone = challengesDaily.map((challenge) => challenge.word);
-      const allWords = allChallenges.map((challenge) => challenge.word);
       const words = allWords.filter((word) => !wordsDone.includes(word));
       const word = words[Math.floor(Math.random() * words.length)];
       if (word) {

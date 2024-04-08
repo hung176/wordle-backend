@@ -27,7 +27,7 @@ export class ChallengeService {
   }
 
   async getAll() {
-    return await this.challengeModel.find().lean();
+    return await this.challengeModel.find({}).lean();
   }
 
   async getChallengeById(challengeId: string) {
@@ -40,6 +40,14 @@ export class ChallengeService {
 
   async getChallengeByType(type: ChallengeType) {
     return await this.challengeModel.find({ type }).sort({ year: -1 }).sort({ day: -1 }).lean();
+  }
+
+  async getWordForDailyChallenge() {
+    const challenge = await this.challengeModel.findOne({ type: ChallengeType.DAILY, expired: false });
+    if (!challenge) {
+      return null;
+    }
+    return challenge;
   }
 
   async update(id: string, updateData: any) {

@@ -41,3 +41,10 @@ export function calculateLetterKeyBoard(attempts: Attempt[]): KeyboardColor {
 
   return result;
 }
+
+export function getDayYear(date: Date = new Date()): { dayOfYear: number; year: number } {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diff = date.getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  return { dayOfYear: Math.floor(diff / oneDay), year: date.getFullYear() };
+}

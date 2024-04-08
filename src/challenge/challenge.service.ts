@@ -7,8 +7,27 @@ import { Model } from 'mongoose';
 export class ChallengeService {
   constructor(@InjectModel(Challenge.name) private challengeModel: Model<ChallengeDocument>) {}
 
-  async create(word: string, type: ChallengeType): Promise<ChallengeDocument> {
-    return await this.challengeModel.create({ word, type });
+  async createDailyChallenge({
+    word,
+    type,
+    day,
+    year,
+  }: {
+    word: string;
+    type?: ChallengeType;
+    day?: number;
+    year?: number;
+  }): Promise<ChallengeDocument> {
+    // set latest challenge as expired
+    const latestChallenge = await this.challengeModel.findOne({ type, expired: false });
+    if (latestChallenge) {
+      await this.challengeModel.updateOne({ _id: latestChallenge._id }, { expired: true });
+    }
+    return await this.challengeModel.create({ word, type, day, year });
+  }
+
+  async getAll() {
+    return await this.challengeModel.find().lean();
   }
 
   async getChallengeById(challengeId: string) {
@@ -20,7 +39,7 @@ export class ChallengeService {
   }
 
   async getChallengeByType(type: ChallengeType) {
-    return await this.challengeModel.find({ type }).lean();
+    return await this.challengeModel.find({ type }).sort({ year: -1 }).sort({ day: -1 }).lean();
   }
 
   async update(id: string, updateData: any) {
@@ -29,14 +48,5 @@ export class ChallengeService {
 
   async delete(id: string) {
     return await this.challengeModel.deleteOne({ _id: id });
-  }
-
-  async createOrUpdate(word: string): Promise<ChallengeDocument> {
-    const challenge = await this.getChallengeByType(ChallengeType.DAILY);
-    if (Array.isArray(challenge) && challenge.length > 0) {
-      const daily = challenge[0];
-      return await this.update(daily._id, { word });
-    }
-    return await this.create(word, ChallengeType.DAILY);
   }
 }

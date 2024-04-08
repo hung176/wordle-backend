@@ -17,6 +17,15 @@ export class Challenge {
   @Prop({ type: String, enum: ChallengeType, required: false, default: null })
   type: ChallengeType;
 
+  @Prop({ type: Number, required: false, default: 0 })
+  day?: number;
+
+  @Prop({ type: Number, required: false })
+  year?: number;
+
+  @Prop({ type: Boolean, required: false, default: false })
+  expired?: boolean;
+
   @Prop()
   createdAt: Date;
 }

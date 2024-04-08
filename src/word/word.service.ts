@@ -18,21 +18,4 @@ export class WordService {
     const all = await this.wordModel.find({}, { word: 1 });
     return all.map(({ word }) => word);
   }
-
-  async getWordForToday(): Promise<Word> {
-    const dayOfYear = this.getDayOfYear();
-    console.log('dayOfYear', dayOfYear);
-    const word = await this.wordModel
-      .findOne()
-      .skip(dayOfYear - 1)
-      .exec();
-    return word;
-  }
-
-  private getDayOfYear(date: Date = new Date()): number {
-    const start = new Date(date.getFullYear(), 0, 0);
-    const diff = date.getTime() - start.getTime();
-    const oneDay = 1000 * 60 * 60 * 24;
-    return Math.floor(diff / oneDay);
-  }
 }

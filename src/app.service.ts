@@ -5,7 +5,7 @@ import { SessionService } from './session/session.service';
 import { STATUS, SessionResponse } from './session/types';
 import { AIService } from './ai/ai.service';
 import { WordGuessDto } from './app.dto';
-import { calculateLetterEachRow, calculateLetterKeyBoard } from './utils';
+import { calculateLetterEachRow, calculateLetterKeyBoard, getDayYear } from './utils';
 import { ChallengeService } from './challenge/challenge.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Challenge, ChallengeDocument, ChallengeType } from './challenge/schemas/challenge.schema';
@@ -182,13 +182,22 @@ export class AppService {
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Asia/Ho_Chi_Minh' })
   async createDailyChallenge(): Promise<boolean> {
-    const { word } = await this.wordService.getWordForToday();
+    const year = new Date().getFullYear();
 
-    if (!word) {
-      return;
+    try {
+      const challengesDaily = (await this.challengeService.getChallengeByType(ChallengeType.DAILY)) || [];
+      const latestDay = challengesDaily[0]?.day || 0;
+      const allChallenges = (await this.challengeService.getAll()) || [];
+      const wordsDone = challengesDaily.map((challenge) => challenge.word);
+      const allWords = allChallenges.map((challenge) => challenge.word);
+      const words = allWords.filter((word) => !wordsDone.includes(word));
+      const word = words[Math.floor(Math.random() * words.length)];
+      if (word) {
+        await this.challengeService.createDailyChallenge({ word, type: ChallengeType.DAILY, day: latestDay + 1, year });
+      }
+    } catch (error) {
+      throw new BadRequestException('Can not create daily challenge');
     }
-
-    await this.challengeService.createOrUpdate(word);
 
     return true;
   }

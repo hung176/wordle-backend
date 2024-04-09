@@ -23,7 +23,10 @@ export class AppService {
 
   async startGame(sessionId: string | null, dailyMode?: boolean): Promise<SessionResponse> {
     try {
-      if (dailyMode) {
+      const session = await this.sessionService.getSessionById(sessionId);
+
+      // if session is not existed, and dailyMode is true, get word from daily challenge
+      if (!session && dailyMode) {
         const challenge = await this.challengeService.getWordForDailyChallenge();
         if (!challenge) {
           throw new BadRequestException('Challenge not found');
@@ -43,9 +46,8 @@ export class AppService {
         });
       }
 
-      const session = await this.sessionService.getSessionById(sessionId);
-
-      if (!sessionId || !session) {
+      // if session is not existed, and dailyMode is false, get random word
+      if (!session && !dailyMode) {
         const wordToGuess = await this.wordService.random();
         return await this.sessionService.create({
           wordToGuess,
@@ -55,18 +57,7 @@ export class AppService {
         });
       }
 
-      if (session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED) {
-        return {
-          sessionId: session._id,
-          attempts: session.attempts,
-          attemptsRemaining: session.attemptsRemaining,
-          status: session.status,
-          keyboardColor: session.keyboardColor,
-          hints: session.hints,
-          wordToGuess: session.wordToGuess,
-        };
-      }
-      return {
+      const responseSession = {
         sessionId: session._id,
         attempts: session.attempts,
         attemptsRemaining: session.attemptsRemaining,
@@ -74,6 +65,15 @@ export class AppService {
         keyboardColor: session.keyboardColor,
         hints: session.hints,
       };
+
+      // if session is existed, return the session
+      if (session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED) {
+        return {
+          ...responseSession,
+          wordToGuess: session.wordToGuess,
+        };
+      }
+      return responseSession;
     } catch (error) {
       throw new BadRequestException('Can not start new game, ' + error.message);
     }

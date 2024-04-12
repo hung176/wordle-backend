@@ -67,7 +67,9 @@ export class AppService {
       };
 
       // if session is existed, return the session
-      if (session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED) {
+      const isGameOver =
+        session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED;
+      if (isGameOver) {
         return {
           ...responseSession,
           wordToGuess: session.wordToGuess,
@@ -89,7 +91,6 @@ export class AppService {
       const newAttempts = [...attempts, calculateLetterEachRow(wordToGuess, guess)];
       const newAttemptsRemaining = attemptsRemaining - 1;
 
-      // before update, calculate what color each character in keyboard
       const keyboardColor = calculateLetterKeyBoard(newAttempts);
       await this.sessionService.update(sessionId, {
         attempts: newAttempts,
@@ -167,18 +168,48 @@ export class AppService {
     }
   }
 
-  async startChallenge(challengeId: string): Promise<ChallengeDocument> {
-    const challenge = await this.challengeService.getChallengeById(challengeId);
+  async startChallenge(challengeId: string): Promise<SessionResponse> {
+    try {
+      const challenge = await this.challengeService.getChallengeById(challengeId);
+      if (!challenge) {
+        throw new BadRequestException('Challenge not found');
+      }
+      const { word } = challenge;
 
-    if (!challenge) {
-      throw new BadRequestException('Challenge not found');
+      return await this.sessionService.create({
+        wordToGuess: word,
+        challengeId,
+        attempts: [],
+        attemptsRemaining: MAX_ATTEMPT,
+        status: STATUS.PLAYING,
+      });
+    } catch (error) {
+      throw new BadRequestException('Can not start challenge');
     }
-
-    return challenge;
   }
 
   async validWords(): Promise<string[]> {
     return this.wordService.findAll();
+  }
+
+  async submitChallenge(word: string): Promise<{ challengeId: string }> {
+    if (typeof word !== 'string') {
+      throw new BadRequestException('Word must be a string');
+    }
+    if (word.length !== 5) {
+      throw new BadRequestException('Word must have 5 characters');
+    }
+    if (!/^[a-zA-Z]+$/.test(word)) {
+      throw new BadRequestException('Word must contain only letters');
+    }
+    const wordLowerCase = word.toLowerCase();
+    const challengeByWord = await this.challengeService.getChallengeByWord(wordLowerCase, ChallengeType.CHALLENGE);
+    if (challengeByWord) {
+      return { challengeId: challengeByWord._id };
+    }
+
+    const challenge = await this.challengeService.createChallenge(wordLowerCase);
+    return { challengeId: challenge._id };
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Asia/Ho_Chi_Minh' })

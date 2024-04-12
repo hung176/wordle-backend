@@ -26,6 +26,10 @@ export class ChallengeService {
     return await this.challengeModel.create({ word, type, day, year });
   }
 
+  async createChallenge(word: string): Promise<ChallengeDocument> {
+    return await this.challengeModel.create({ word, type: ChallengeType.CHALLENGE });
+  }
+
   async getAll() {
     return await this.challengeModel.find({}).lean();
   }
@@ -34,8 +38,8 @@ export class ChallengeService {
     return await this.challengeModel.findOne({ _id: challengeId }).lean();
   }
 
-  async getChallengeByWord(word: string) {
-    return await this.challengeModel.findOne({ word }).lean();
+  async getChallengeByWord(word: string, type?: ChallengeType) {
+    return await this.challengeModel.findOne({ word, type }).lean();
   }
 
   async getChallengeByType(type: ChallengeType) {

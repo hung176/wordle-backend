@@ -82,4 +82,13 @@ export class AppController {
       Load the dictionary in the first loading to prevent too many submits an valid words.
      */
   }
+
+  @Post('challenge')
+  async submitChallenge(@Body() { word }: { word: string }) {
+    return await this.appService.submitChallenge(word);
+    /**
+      This endpoint is used to submit a challenge game session.
+      When a user wants to submit a challenge game, they make a request to this endpoint with a word.
+     */
+  }
 }

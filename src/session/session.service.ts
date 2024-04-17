@@ -30,6 +30,21 @@ export class SessionService {
     return session;
   }
 
+  async getSessionChallenge(sessionId: string, challengeId: string) {
+    const session = await this.sessionModel.findOne({ _id: sessionId, challengeId }).lean();
+    if (!session) {
+      return null;
+    }
+    return {
+      sessionId: session._id,
+      attempts: session.attempts,
+      attemptsRemaining: session.attemptsRemaining,
+      status: session.status,
+      keyboardColor: session.keyboardColor,
+      hints: session.hints,
+    };
+  }
+
   async getSessionByUserId(userId: string) {
     return await this.sessionModel.find({ userId }).lean();
   }

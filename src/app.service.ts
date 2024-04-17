@@ -25,6 +25,22 @@ export class AppService {
     try {
       const session = await this.sessionService.getSessionById(sessionId);
 
+      // if challenge is existed, create a new session
+      if (session && session.challengeId) {
+        const wordToGuess = await this.wordService.random();
+
+        if (!wordToGuess) {
+          throw new BadRequestException('Word not found');
+        }
+
+        return await this.sessionService.create({
+          wordToGuess,
+          attempts: [],
+          attemptsRemaining: MAX_ATTEMPT,
+          status: STATUS.PLAYING,
+        });
+      }
+
       // if session is not existed, and dailyMode is true, get word from daily challenge
       if (!session && dailyMode) {
         const challenge = await this.challengeService.getWordForDailyChallenge();
@@ -168,13 +184,18 @@ export class AppService {
     }
   }
 
-  async startChallenge(challengeId: string): Promise<SessionResponse> {
+  async startChallenge(challengeId: string, sessionId: string): Promise<SessionResponse> {
     try {
       const challenge = await this.challengeService.getChallengeById(challengeId);
       if (!challenge) {
         throw new BadRequestException('Challenge not found');
       }
       const { word } = challenge;
+
+      const session = await this.sessionService.getSessionChallenge(sessionId, challengeId);
+      if (session) {
+        return session;
+      }
 
       return await this.sessionService.create({
         wordToGuess: word,

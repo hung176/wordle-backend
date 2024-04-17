@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { WordGuessDto } from './app.dto';
 
@@ -62,10 +62,9 @@ export class AppController {
      */
   }
 
-  // /start?challengeId=123
-  @Get('start')
-  async startChallenge(@Query('challengeId') challengeId: string) {
-    return await this.appService.startChallenge(challengeId);
+  @Get('challenge/:challengeId')
+  async startChallenge(@Param('challengeId') challengeId: string, @Query('sessionId') sessionId: string | null) {
+    return await this.appService.startChallenge(challengeId, sessionId);
     /**
       This endpoint is used to start a challenge game session.
       When a user wants to begin a challenge game, they make a request to this endpoint with the challenge ID.

@@ -1,3 +1,5 @@
+import { ChallengeType } from 'src/challenge/schemas/challenge.schema';
+
 export enum STATUS {
   PLAYING = 'PLAYING',
   SUCCESS = 'SUCCESS',
@@ -20,6 +22,7 @@ export type Attempt = Letter[];
 export type SessionType = {
   sessionId: string;
   challengeId?: string;
+  challengeType?: ChallengeType;
   userId: string;
   wordToGuess: string;
   attemptsRemaining: number;

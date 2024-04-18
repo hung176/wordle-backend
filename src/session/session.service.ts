@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Session, SessionDocument } from './schemas/session.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -14,6 +14,8 @@ export class SessionService {
 
     return {
       sessionId: sessionCreated._id,
+      challengeId: sessionCreated.challengeId,
+      challengeType: sessionCreated.challengeType,
       attempts: sessionCreated.attempts,
       attemptsRemaining: sessionCreated.attemptsRemaining,
       status: sessionCreated.status,
@@ -30,19 +32,12 @@ export class SessionService {
     return session;
   }
 
-  async getSessionChallenge(sessionId: string, challengeId: string) {
+  async getSessionChallenge(sessionId: string | null, challengeId: string, includeWordToGuess = false) {
     const session = await this.sessionModel.findOne({ _id: sessionId, challengeId }).lean();
     if (!session) {
       return null;
     }
-    return {
-      sessionId: session._id,
-      attempts: session.attempts,
-      attemptsRemaining: session.attemptsRemaining,
-      status: session.status,
-      keyboardColor: session.keyboardColor,
-      hints: session.hints,
-    };
+    return session;
   }
 
   async getSessionByUserId(userId: string) {

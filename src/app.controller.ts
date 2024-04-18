@@ -63,8 +63,9 @@ export class AppController {
   }
 
   @Get('challenge/:challengeId')
-  async startChallenge(@Param('challengeId') challengeId: string, @Query('sessionId') sessionId: string | null) {
-    return await this.appService.startChallenge(challengeId, sessionId);
+  async startChallenge(@Param('challengeId') challengeId: string, @Query('sessionId') sessionId: string) {
+    const parsedSessionId = sessionId === 'null' ? null : sessionId;
+    return await this.appService.startChallenge(challengeId, parsedSessionId);
     /**
       This endpoint is used to start a challenge game session.
       When a user wants to begin a challenge game, they make a request to this endpoint with the challenge ID.

@@ -7,6 +7,7 @@ export type ChallengeDocument = Challenge & Document;
 export enum ChallengeType {
   DAILY = 'DAILY',
   CHALLENGE = 'CHALLENGE',
+  INFINITE = 'INFINITE',
 }
 
 @Schema({ timestamps: true, versionKey: false })

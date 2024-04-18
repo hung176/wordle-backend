@@ -25,22 +25,6 @@ export class AppService {
     try {
       const session = await this.sessionService.getSessionById(sessionId);
 
-      // if challenge is existed, create a new session
-      if (session && session.challengeId) {
-        const wordToGuess = await this.wordService.random();
-
-        if (!wordToGuess) {
-          throw new BadRequestException('Word not found');
-        }
-
-        return await this.sessionService.create({
-          wordToGuess,
-          attempts: [],
-          attemptsRemaining: MAX_ATTEMPT,
-          status: STATUS.PLAYING,
-        });
-      }
-
       // if session is not existed, and dailyMode is true, get word from daily challenge
       if (!session && dailyMode) {
         const challenge = await this.challengeService.getWordForDailyChallenge();
@@ -56,6 +40,7 @@ export class AppService {
         return await this.sessionService.create({
           wordToGuess,
           challengeId: challenge._id,
+          challengeType: ChallengeType.DAILY,
           attempts: [],
           attemptsRemaining: MAX_ATTEMPT,
           status: STATUS.PLAYING,
@@ -73,9 +58,22 @@ export class AppService {
         });
       }
 
+      // session is existed, but it is in challenge mode, crete new session with norlmal mode
+      if (session && session.challengeType === ChallengeType.CHALLENGE) {
+        const wordToGuess = await this.wordService.random();
+        return await this.sessionService.create({
+          wordToGuess,
+          attempts: [],
+          attemptsRemaining: MAX_ATTEMPT,
+          status: STATUS.PLAYING,
+        });
+      }
+
       const responseSession = {
         sessionId: session._id,
         attempts: session.attempts,
+        challengeId: session.challengeId,
+        challengeType: session.challengeType,
         attemptsRemaining: session.attemptsRemaining,
         status: session.status,
         keyboardColor: session.keyboardColor,
@@ -184,7 +182,7 @@ export class AppService {
     }
   }
 
-  async startChallenge(challengeId: string, sessionId: string): Promise<SessionResponse> {
+  async startChallenge(challengeId: string, sessionId: string | null): Promise<SessionResponse> {
     try {
       const challenge = await this.challengeService.getChallengeById(challengeId);
       if (!challenge) {
@@ -194,17 +192,31 @@ export class AppService {
 
       const session = await this.sessionService.getSessionChallenge(sessionId, challengeId);
       if (session) {
-        return session;
+        if (session.status === STATUS.ENDED || session.status === STATUS.SUCCESS || session.status === STATUS.FAILED) {
+          return session;
+        }
+        return {
+          sessionId: session._id,
+          challengeId: session.challengeId,
+          challengeType: session.challengeType,
+          attempts: session.attempts,
+          attemptsRemaining: session.attemptsRemaining,
+          status: session.status,
+          keyboardColor: session.keyboardColor,
+          hints: session.hints,
+        };
       }
 
       return await this.sessionService.create({
         wordToGuess: word,
         challengeId,
+        challengeType: ChallengeType.CHALLENGE,
         attempts: [],
         attemptsRemaining: MAX_ATTEMPT,
         status: STATUS.PLAYING,
       });
     } catch (error) {
+      console.log('error', error);
       throw new BadRequestException('Can not start challenge');
     }
   }

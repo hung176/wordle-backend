@@ -1,5 +1,6 @@
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
 import { STATUS } from '../types';
+import { ChallengeType } from 'src/challenge/schemas/challenge.schema';
 
 export class CreateSessionDto {
   // @IsString()
@@ -22,4 +23,7 @@ export class CreateSessionDto {
 
   @IsString()
   challengeId?: string;
+
+  @IsEnum(ChallengeType)
+  challengeType?: ChallengeType;
 }

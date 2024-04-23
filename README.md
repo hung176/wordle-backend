@@ -1,50 +1,22 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This repository is the backend of wordle game. The front end is from `https://github.com/hung176/wordle-frontend`
 
-## Installation
+## Endpoint
 
-```bash
-$ npm install
-```
+### POST /start
+When a user wants to begin a new game, they make a request to this endpoint.
+The backend generates a new game session, selects a random word, initializes game-related data (e.g., number of attempts), and returns an initial response to the user.
 
-## Running the app
+### POST /guess
+When a user makes a guess in the game (e.g., entering a 5-letter word), the frontend sends a request to this endpoint with the guessed word.
+The backend then processes the guess, checks if it's valid, compares it to the target word, calculates the result (e.g., how many letters are correct and in the right position), and updates the game state.
 
-```bash
-# development
-$ npm run start
+### GET /challenge/:challenged
+When a user wants to begin a challenge game, they make a request to this endpoint with the challenge ID.
+The backend generates a new game session for the challenge, selects a random word, initializes game-related data (e.g., number of attempts), and returns an initial response to the user.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+### POST /challenge
+This endpoint is used to submit a challenge game session.
+When a user wants to submit a challenge game, they make a request to this endpoint with a word.
